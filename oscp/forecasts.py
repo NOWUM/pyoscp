@@ -6,13 +6,12 @@ Created on Thu Mar 18 12:32:01 2021
 @author: maurer
 """
 
-from flask_restx import Resource, Namespace
-# ,add_models_to__namespace
+from flask_restx import Resource, Namespace  # ,add_models_to__namespace
 from oscp.models import GroupCapacityForecast, ForecastedBlock
 import logging
 
 # a namespace is a group of api routes which have the same prefix
-# (i think mostly all are inthe same namespace in oscp)
+# (i think mostly all are in the same namespace in oscp)
 forecast_ns = Namespace(name="forecast", validate=True)
 
 forecast_ns.models[GroupCapacityForecast.name] = GroupCapacityForecast

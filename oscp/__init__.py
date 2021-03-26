@@ -11,8 +11,8 @@ Api definition file
 from flask import Blueprint
 from flask_restx import Api
 
-from oscp.forecasts import forecast_ns
-
+# from oscp.forecasts import forecast_ns
+from oscp.fp_backend import flex_provider_ns
 
 def createBlueprint(injected_objects):
     '''
@@ -29,9 +29,10 @@ def createBlueprint(injected_objects):
     blueprint
 
     '''
-    blueprint = Blueprint("api", __name__, url_prefix="/oscp/fp/2.0")
+    blueprint = Blueprint("api", __name__, url_prefix="/oscp")
     authorizations = {"Bearer": {"type": "apiKey",
-                                 "in": "header", "name": "Authorization"}}
+                                 "in": "header",
+                                 "name": "Authorization"}}
 
     api = Api(
         blueprint,
@@ -46,10 +47,10 @@ def createBlueprint(injected_objects):
 
     # inject objects through class kwargs
     # (small hack, must be done for new namespaces too)
-    for namesp in [forecast_ns]:
-        for res in namesp.resources:
+    for ns in [flex_provider_ns]:
+        for res in ns.resources:
             res.kwargs['resource_class_kwargs'] = injected_objects
-            
+
     # register namespace at api (must be done for new namespaces too)
-    api.add_namespace(forecast_ns)  # , path="/"+namesp.name)
+    api.add_namespace(flex_provider_ns)  # , path="/"+namesp.name)
     return blueprint

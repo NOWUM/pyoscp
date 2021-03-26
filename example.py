@@ -29,7 +29,8 @@ if __name__ == '__main__':
 
     @app.route('/', methods=['POST', 'GET'])
     def home():
-        return redirect('/oscp/fp/2.0/ui')
+        # return redirect('/oscp/fp/2.0/ui')
+        return redirect('/oscp/ui')
 
     # inject dependencies here
     fcm = ForecastManager()
