@@ -26,42 +26,38 @@ phase_indicator_type = ['UNKNOWN', 'ONE', 'TWO', 'THREE', 'ALL']
 
 capacity_forecast_type = ['CONSUMPTION', 'GENERATION', 'FALLBACK_CONSUMPTION', 'FALLBACK_GENERATION', 'OPTIMUM']
 
+RequiredBehaviour = Model('RequiredBehaviour', {
+    'heartbeat_interval': fields.Integer(description='Optional. The interval (in seconds) in which the sender of '
+                                                     'this response expects heartbeats to receive. If provided, '
+                                                     'value must be 1 or higher. If the sender is not interested '
+                                                     'in the heartbeat of the receiver, this field can be '
+                                                     'omitted.'),
+    'measurement_configuration': fields.String(enum=measurement_configuration,
+                                               description='For determining how measurements are aggregated. '
+                                                           'Providing multiple configurations is allowed. An empty '
+                                                           'array represents no configurations.')
+})
+
+VersionUrl = Model('VersionUrl', {
+    'version': fields.String(description='Mandatory. The OSCP version, e.g. "2.0".'),
+    'base_url': fields.Url(description='Mandatory. The base url for this version, e.g. "https://oscp/cp/2.0".')
+})
+
 Register = Model('Register', {
     'token': fields.String(description='The token for the other party to authenticate in your system.'),
-    'version_url': fields.List({
-        'version': fields.String(description='Mandatory. The OSCP version, e.g. "2.0".'),
-        'base_url': fields.Url(description='Mandatory. The base url for this version, e.g. "https://oscp/cp/2.0".')
-    }, description='The initiator of the registration sends in this field the OSCP versions that it supports with '
-                   'associated base URLs. When used as a reply, it contains the OSCP version that is selected, '
-                   'with the associated base url.')
+    'version_url': fields.List(fields.Nested(VersionUrl),
+                               description='The initiator of the registration sends in this field the OSCP versions '
+                                           'that it supports with associated base URLs. When used as a reply, '
+                                           'it contains the OSCP version that is selected, with the associated base '
+                                           'url.')
 })
 
 Handshake = Model('Handshake', {
-    'required_behaviour': {
-        'heartbeat_interval': fields.Integer(description='Optional. The interval (in seconds) in which the sender of '
-                                                         'this response expects heartbeats to receive. If provided, '
-                                                         'value must be 1 or higher. If the sender is not interested '
-                                                         'in the heartbeat of the receiver, this field can be '
-                                                         'omitted.'),
-        'measurement_configuration': fields.List(enum=measurement_configuration,
-                                                 description='For determining how measurements are aggregated. '
-                                                             'Providing multiple configurations is allowed. An empty '
-                                                             'array represents no configurations.')
-    }
+    'required_behaviour': fields.Nested(RequiredBehaviour)
 })
 
 HandshakeAcknowledgement = Model('HandshakeAcknowledgement', {
-    'required_behaviour': {
-        'heartbeat_interval': fields.Integer(description='Optional. The interval (in seconds) in which the sender of '
-                                                         'this response expects heartbeats to receive. If provided, '
-                                                         'value must be 1 or higher. If the sender is not interested '
-                                                         'in the heartbeat of the receiver, this field can be '
-                                                         'omitted.'),
-        'measurement_configuration': fields.List(enum=measurement_configuration,
-                                                 description='For determining how measurements are aggregated. '
-                                                             'Providing multiple configurations is allowed. An empty '
-                                                             'array represents no configurations.')
-    }
+    'required_behaviour': fields.Nested(RequiredBehaviour)
 })
 
 Heartbeat = Model('Heartbeat', {
@@ -86,8 +82,8 @@ GroupCapacityForecast = Model('UpdateGroupCapacityForecast', {
     'type': fields.String(enum=capacity_forecast_type, description='Identifies the type of forecast.'),
 
     'forecasted_blocks': fields.List(fields.Nested(ForecastedBlock),
-         description='The technical content of this message. Describes the amound and period of the to be adjusted '
-         'capacity'),
+                                     description='The technical content of this message. Describes the amound and period of the to be adjusted '
+                                                 'capacity'),
 })
 
 AdjustGroupCapacityForecast = Model('AdjustGroupCapacityForecast', {
@@ -98,8 +94,8 @@ AdjustGroupCapacityForecast = Model('AdjustGroupCapacityForecast', {
     'type': fields.String(enum=capacity_forecast_type, description='Identifies the type of forecast.'),
 
     'forecasted_blocks': fields.List(fields.Nested(ForecastedBlock),
-         description='The technical content of this message. Describes the amount and period of the to be adjusted '
-                     'capacity'),
+                                     description='The technical content of this message. Describes the amount and period of the to be adjusted '
+                                                 'capacity'),
 })
 
 GroupCapacityComplianceError = Model('GroupCapacityComplianceError', {
@@ -125,8 +121,8 @@ UpdateGroupMeasurements = Model('UpdateGroupMeasurements', {
         'energy_type': fields.String(enum=energy_type, description='Indicates whether flexible, non-flexible or total '
                                                                    'energy is reported. When absent, '
                                                                    'TOTAL is assumed.'),
-        'measure_time':  fields.DateTime(),
-        'initial_measure_time':  fields.DateTime()
+        'measure_time': fields.DateTime(),
+        'initial_measure_time': fields.DateTime()
     }
 })
 
