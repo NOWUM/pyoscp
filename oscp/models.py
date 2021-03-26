@@ -28,11 +28,12 @@ capacity_forecast_type = ['CONSUMPTION', 'GENERATION', 'FALLBACK_CONSUMPTION', '
 
 Register = Model('Register', {
     'token': fields.String(description='The token for the other party to authenticate in your system.'),
-    'version_url': fields.List(fields.String(),
-                               description='The initiator of the registration sends in this field the OSCP versions '
-                                           'that it supports with associated base URLs. When used as a reply, '
-                                           'it contains the OSCP version that is selected, with the associated base '
-                                           'url.')
+    'version_url': fields.List({
+        'version': fields.String(description='Mandatory. The OSCP version, e.g. "2.0".'),
+        'base_url': fields.Url(description='Mandatory. The base url for this version, e.g. "https://oscp/cp/2.0".')
+    }, description='The initiator of the registration sends in this field the OSCP versions that it supports with '
+                   'associated base URLs. When used as a reply, it contains the OSCP version that is selected, '
+                   'with the associated base url.')
 })
 
 Handshake = Model('Handshake', {
