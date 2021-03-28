@@ -7,29 +7,28 @@ Created on Sun Mar 14 18:02:46 2021
 
 Api definition file
 """
-
 from flask import Blueprint
 from flask_restx import Api
 
 # from oscp.forecasts import forecast_ns
-from oscp.fp_backend import flex_provider_ns
-from oscp.cp_backend import cap_provider_ns
-from oscp.co_backend import cap_optimizer_ns
+from oscp.fp_endpoints import flex_provider_ns
+from oscp.cp_endpoints import cap_provider_ns
+from oscp.co_endpoints import cap_optimizer_ns
 
 
-def createBlueprint(injected_objects):
+def createBlueprint(injected_objects, actor='all'):
     """
     Creates API blueprint with injected Objects.
     Must contain a forecastmanager and others...
 
     Parameters
     ----------
-    injected_objects : TYPE
-        DESCRIPTION.
+    :param injected_objects: Irgendwie werden hier wohl Klassen/Module/Funktionen übergeben zB endpointmanager
+    :param actor: 'cp', 'fp', 'co' for Capacity Provider, Flexibility Provider and Capacity Optimizer
 
     Returns
     -------
-    blueprint
+    :return blueprint: Blueprint dies das
 
     """
     blueprint = Blueprint("api", __name__, url_prefix="/oscp")
@@ -50,18 +49,25 @@ def createBlueprint(injected_objects):
 
     # inject objects through class kwargs
     # (small hack, must be done for new namespaces too)
-    for ns in [flex_provider_ns]:
-        for res in ns.resources:
-            res.kwargs['resource_class_kwargs'] = injected_objects
-    for ns in [cap_provider_ns]:
-        for res in ns.resources:
-            res.kwargs['resource_class_kwargs'] = injected_objects
-    for ns in [cap_optimizer_ns]:
-        for res in ns.resources:
-            res.kwargs['resource_class_kwargs'] = injected_objects
+    if actor == 'fp' or actor == 'all':
+        for ns in [flex_provider_ns]:
+            for res in ns.resources:
+                res.kwargs['resource_class_kwargs'] = injected_objects
+        # register namespace at api (must be done for new namespaces too)
+        api.add_namespace(flex_provider_ns)  # , path="/"+namesp.name)
 
-    # register namespace at api (must be done for new namespaces too)
-    api.add_namespace(flex_provider_ns)  # , path="/"+namesp.name)
-    api.add_namespace(cap_provider_ns)
-    api.add_namespace(cap_optimizer_ns)
+    if actor == 'cp' or actor == 'all':
+        for ns in [cap_provider_ns]:
+            for res in ns.resources:
+                res.kwargs['resource_class_kwargs'] = injected_objects
+        # register namespace at api (must be done for new namespaces too)
+        api.add_namespace(cap_provider_ns)
+
+    if actor == 'co' or actor == 'all':
+        for ns in [cap_optimizer_ns]:
+            for res in ns.resources:
+                res.kwargs['resource_class_kwargs'] = injected_objects
+        # register namespace at api (must be done for new namespaces too)
+        api.add_namespace(cap_optimizer_ns)
+
     return blueprint

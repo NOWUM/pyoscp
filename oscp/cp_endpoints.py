@@ -1,6 +1,7 @@
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
-from oscp.models import ForecastedBlock, Register, Heartbeat, HandshakeAcknowledgement
-from oscp.models import AdjustGroupCapacityForecast, GroupCapacityComplianceError, UpdateGroupMeasurements, Measurements
+from oscp.json_models import ForecastedBlock, Register, VersionUrl, Heartbeat, HandshakeAcknowledgement, \
+    AdjustGroupCapacityForecast, GroupCapacityComplianceError, UpdateGroupMeasurements, Measurements, \
+    RequiredBehaviour
 import logging
 
 # a namespace is a group of api routes which have the same prefix
@@ -8,13 +9,14 @@ import logging
 cap_provider_ns = Namespace(name="cp", validate=True)
 cap_provider_ns.models[ForecastedBlock.name] = ForecastedBlock
 cap_provider_ns.models[Register.name] = Register
+cap_provider_ns.models[VersionUrl.name] = VersionUrl
 cap_provider_ns.models[Heartbeat.name] = Heartbeat
 cap_provider_ns.models[HandshakeAcknowledgement.name] = HandshakeAcknowledgement
 cap_provider_ns.models[AdjustGroupCapacityForecast.name] = AdjustGroupCapacityForecast
 cap_provider_ns.models[GroupCapacityComplianceError.name] = GroupCapacityComplianceError
 cap_provider_ns.models[UpdateGroupMeasurements.name] = UpdateGroupMeasurements
 cap_provider_ns.models[Measurements.name] = Measurements
-
+cap_provider_ns.models[RequiredBehaviour.name] = RequiredBehaviour
 
 header_parser = cap_provider_ns.parser()
 header_parser.add_argument('Authorization', required=True, location='headers')
@@ -22,7 +24,6 @@ header_parser.add_argument('X-Request-ID', required=True, location='headers')
 header_parser.add_argument('X-Correlation-ID', location='headers')
 header_parser.add_argument('X-Segment-Index', location='headers')
 header_parser.add_argument('X-Segment-Count', location='headers')
-
 
 @cap_provider_ns.route('/2.0/register', doc={"description": "API Endpoint for Registration of participants"})
 @cap_provider_ns.expect(header_parser)  # validate=True
@@ -44,10 +45,10 @@ class register(Resource):
         The (one-time) registration of an endpoint MUST be done prior to sending handshakes which is described below.
         """
 
-        self.endpointmanager.addEndpoint(endpoint=cap_provider_ns.payload)
+        self.endpointmanager.addEndpoint(Register=cap_provider_ns.payload)
         # using logging instead of print is threadsafe and non-blocking
         # but you can't add multiple strings and expect that they get joined
-        logging.info('something')
+        logging.info('Log doch mal was')
         return '', 204
 
 

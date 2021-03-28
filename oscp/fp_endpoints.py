@@ -1,6 +1,6 @@
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
-from oscp.models import GroupCapacityForecast, ForecastedBlock, Register, VersionUrl
-from oscp.models import Handshake, HandshakeAcknowledgement, Heartbeat, RequiredBehaviour
+from oscp.json_models import GroupCapacityForecast, ForecastedBlock, Register, VersionUrl
+from oscp.json_models import Handshake, HandshakeAcknowledgement, Heartbeat, RequiredBehaviour
 import logging
 
 # a namespace is a group of api routes which have the same prefix

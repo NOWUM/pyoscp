@@ -1,5 +1,5 @@
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
-from oscp.models import GroupCapacityForecast, ForecastedBlock
+from oscp.json_models import GroupCapacityForecast, ForecastedBlock
 import logging
 
 # a namespace is a group of api routes which have the same prefix
