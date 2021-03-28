@@ -13,9 +13,12 @@ from flask_restx import Api
 
 # from oscp.forecasts import forecast_ns
 from oscp.fp_backend import flex_provider_ns
+from oscp.cp_backend import cap_provider_ns
+from oscp.co_backend import cap_optimizer_ns
+
 
 def createBlueprint(injected_objects):
-    '''
+    """
     Creates API blueprint with injected Objects.
     Must contain a forecastmanager and others...
 
@@ -28,7 +31,7 @@ def createBlueprint(injected_objects):
     -------
     blueprint
 
-    '''
+    """
     blueprint = Blueprint("api", __name__, url_prefix="/oscp")
     authorizations = {"Bearer": {"type": "apiKey",
                                  "in": "header",
@@ -50,7 +53,15 @@ def createBlueprint(injected_objects):
     for ns in [flex_provider_ns]:
         for res in ns.resources:
             res.kwargs['resource_class_kwargs'] = injected_objects
+    for ns in [cap_provider_ns]:
+        for res in ns.resources:
+            res.kwargs['resource_class_kwargs'] = injected_objects
+    for ns in [cap_optimizer_ns]:
+        for res in ns.resources:
+            res.kwargs['resource_class_kwargs'] = injected_objects
 
     # register namespace at api (must be done for new namespaces too)
     api.add_namespace(flex_provider_ns)  # , path="/"+namesp.name)
+    api.add_namespace(cap_provider_ns)
+    api.add_namespace(cap_optimizer_ns)
     return blueprint

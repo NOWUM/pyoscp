@@ -10,20 +10,13 @@ This module contains representation of used Enums and Classes from OSCP
 
 from flask_restx import fields, Model
 
-asset_category = ['CHARGING', 'CONSUMPTION', 'GENERATION', 'STORAGE']
-
-forecastedblock_unit_type = ['A', 'W', 'KW', 'WH', 'KWH']
-
 energy_measurement_unit = ['WH', 'KWH']
-
 direction = ['NET', 'IMPORT', 'EXPORT']
-
 energy_type = ['FLEXIBLE', 'NONFLEXIBLE', 'TOTAL']
-
+forecastedblock_unit_type = ['A', 'W', 'KW', 'WH', 'KWH']
 measurement_configuration = ['CONTINUOUS', 'INTERMITTENT']
-
 phase_indicator_type = ['UNKNOWN', 'ONE', 'TWO', 'THREE', 'ALL']
-
+asset_category = ['CHARGING', 'CONSUMPTION', 'GENERATION', 'STORAGE']
 capacity_forecast_type = ['CONSUMPTION', 'GENERATION', 'FALLBACK_CONSUMPTION', 'FALLBACK_GENERATION', 'OPTIMUM']
 
 RequiredBehaviour = Model('RequiredBehaviour', {
@@ -39,8 +32,8 @@ RequiredBehaviour = Model('RequiredBehaviour', {
 })
 
 VersionUrl = Model('VersionUrl', {
-    'version': fields.String(description='Mandatory. The OSCP version, e.g. "2.0".'),
-    'base_url': fields.Url(description='Mandatory. The base url for this version, e.g. "https://oscp/cp/2.0".')
+    'version': fields.String(description='Mandatory. The OSCP version, e.g. 2.0.'),
+    'base_url': fields.Url(description='Mandatory. The base url for this version, e.g. https://oscp/cp/2.0.')
 })
 
 Register = Model('Register', {
@@ -107,28 +100,30 @@ GroupCapacityComplianceError = Model('GroupCapacityComplianceError', {
                                      description='Optional. The list of forecast blocks that FP cannot comply to.')
 })
 
+Measurements = Model('Measurements', {
+    'value': fields.Float(),
+    'phase': fields.String(enum=phase_indicator_type,
+                           description='Identifies the phase that the forecast is meant for.'),
+    'unit': fields.String(enum=energy_measurement_unit, description='A unit of energy measurement.'),
+    'direction': fields.String(enum=direction, description='Indicates the direction the energy has flown into ('
+                                                           'import, export or net).'),
+    'energy_type': fields.String(enum=energy_type, description='Indicates whether flexible, non-flexible or total '
+                                                               'energy is reported. When absent, '
+                                                               'TOTAL is assumed.'),
+    'measure_time': fields.DateTime(),
+    'initial_measure_time': fields.DateTime()
+})
+
 UpdateGroupMeasurements = Model('UpdateGroupMeasurements', {
     'group_id': fields.String(
         description='The id of the area in which the Flexibility Provider has Flexibility Resources connected to the '
                     'grid.'),
-    'measurements': {
-        'value': fields.Float(),
-        'phase': fields.String(enum=phase_indicator_type,
-                               description='Identifies the phase that the forecast is meant for.'),
-        'unit': fields.String(enum=energy_measurement_unit, description='A unit of energy measurement.'),
-        'direction': fields.String(enum=direction, description='Indicates the direction the energy has flown into ('
-                                                               'import, export or net).'),
-        'energy_type': fields.String(enum=energy_type, description='Indicates whether flexible, non-flexible or total '
-                                                                   'energy is reported. When absent, '
-                                                                   'TOTAL is assumed.'),
-        'measure_time': fields.DateTime(),
-        'initial_measure_time': fields.DateTime()
-    }
+    'measurements': fields.Nested(Measurements)
 })
 
 
 # models must be registered at a namespace.
 # If the API is somehow using a given model, you should add it to the array
-def add_models_to__namespace(namespace):
+def add_models_to_namespace(namespace):
     for model in [GroupCapacityForecast, ForecastedBlock]:
         namespace.models[model.name] = model

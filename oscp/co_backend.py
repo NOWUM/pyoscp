@@ -55,10 +55,10 @@ class updateGroupCapacityForecast(Resource):
     @cap_optimizer_ns.marshal_with(GroupCapacityForecast)
     # @forecast_ns.response(204, 'No Content')
     def post(self):
-        '''
+        """
         The message is sent from Capacity Provider to the Flexibility Provider and from Flexibility Provider to Capacity Optimizer which
         should generate an Optimum capacity forecast for the capacity that should be used in the specific group.
-        '''
+        """
 
         self.forecastmanager.forecasts.append(cap_optimizer_ns.payload)
         # using logging instead of print is threadsafe and non-blocking
