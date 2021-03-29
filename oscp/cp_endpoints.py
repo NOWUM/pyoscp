@@ -45,7 +45,7 @@ class register(Resource):
         The (one-time) registration of an endpoint MUST be done prior to sending handshakes which is described below.
         """
 
-        self.endpointmanager.addEndpoint(Register=cap_provider_ns.payload)
+        self.endpointmanager.addEndpoint(cap_provider_ns.payload)
         # using logging instead of print is threadsafe and non-blocking
         # but you can't add multiple strings and expect that they get joined
         logging.info('Log doch mal was')

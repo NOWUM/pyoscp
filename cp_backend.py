@@ -7,25 +7,35 @@ backend app for capacity provider
 """
 
 from oscp import createBlueprint
-from flask_restx import Model
 from oscp.json_models import Register
 
 
+from packaging import version
+
 class Endpoint(dict):
 
-    def __init__(self, Register):
-        self.token = Register[token]
-        self.version = Register[version_url][version]
-        self.base_url = Register[version_url][base_url]
+    # always communicate with latest version available
+    def _getLatestVersion(self, version_urls):
+        latest = version.parse(version_urls[0]['version'])
+        baseUrl = version_urls[0]['base_url']
+        for v in version_urls:
+            cur = version.parse(v['version'])
+            if  cur > latest:
+                baseUrl = v['base_url']
+                latest = cur
+        return str(latest), baseUrl
 
+    def __init__(self, reg):
+        self['token'] = reg['token']
+        self['version'], self['base_url'] = self._getLatestVersion(reg['version_url'])
 
 class EndpointManager(object):
 
     def __init__(self):
         self.endpoints = []
 
-    def addEndpoint(self, Register):
-        self.endpoints.append(Endpoint(Register))
+    def addEndpoint(self, reg):
+        self.endpoints.append(Endpoint(reg))
 
 
 # the forecastManager is independent from the communication and should be replacable
