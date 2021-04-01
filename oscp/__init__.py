@@ -16,7 +16,7 @@ from oscp.cp_endpoints import cap_provider_ns
 from oscp.co_endpoints import cap_optimizer_ns
 
 
-def createBlueprint(injected_objects, actors=['fp','cp','co']):
+def createBlueprint(injected_objects, actors=['fp', 'cp', 'co']):
     """
     Creates API blueprint with injected Objects.
     Must contain a forecastmanager and others...
@@ -54,13 +54,13 @@ def createBlueprint(injected_objects, actors=['fp','cp','co']):
             res.kwargs['resource_class_kwargs'] = injected_objects
 
     # register namespace at api (must be done for new namespaces too)
-    if  'fp' in actors:
+    if 'fp' in actors:
         api.add_namespace(flex_provider_ns)  # , path="/"+namesp.name)
 
-    if  'cp' in actors:
+    if 'cp' in actors:
         api.add_namespace(cap_provider_ns)
 
-    if  'co' in actors:
+    if 'co' in actors:
         api.add_namespace(cap_optimizer_ns)
 
     return blueprint

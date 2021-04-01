@@ -25,6 +25,7 @@ header_parser.add_argument('X-Correlation-ID', location='headers')
 header_parser.add_argument('X-Segment-Index', location='headers')
 header_parser.add_argument('X-Segment-Count', location='headers')
 
+
 @cap_provider_ns.route('/2.0/register', doc={"description": "API Endpoint for Registration of participants"})
 @cap_provider_ns.expect(header_parser)  # validate=True
 @cap_provider_ns.response(204, 'No Content')
@@ -68,6 +69,7 @@ class handshake_acknowledgement(Resource):
         """
 
         return '', 204
+
 
 @cap_provider_ns.route('/2.0/heartbeat', doc={"description": "API Endpoint for Registration of participants"})
 @cap_provider_ns.expect(header_parser)  # validate=True

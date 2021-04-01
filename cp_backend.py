@@ -7,10 +7,8 @@ backend app for capacity provider
 """
 
 from oscp import createBlueprint
-from oscp.json_models import Register
-
-
 from packaging import version
+
 
 class Endpoint(dict):
 
@@ -20,14 +18,16 @@ class Endpoint(dict):
         baseUrl = version_urls[0]['base_url']
         for v in version_urls:
             cur = version.parse(v['version'])
-            if  cur > latest:
+            if cur > latest:
                 baseUrl = v['base_url']
                 latest = cur
         return str(latest), baseUrl
 
     def __init__(self, reg):
         self['token'] = reg['token']
-        self['version'], self['base_url'] = self._getLatestVersion(reg['version_url'])
+        self['version'], self['base_url'] = self._getLatestVersion(
+            reg['version_url'])
+
 
 class EndpointManager(object):
 
