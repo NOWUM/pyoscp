@@ -72,7 +72,7 @@ class register(Resource):
         The (one-time) registration of an endpoint MUST be done prior to sending handshakes which is described below.
         """
 
-        self.endpointmanager.addEndpoint(endpoint=flex_provider_ns.payload)
+        self.endpointmanager.registerEndpoint(reg=flex_provider_ns.payload)
         logging.info('Log something, please.')
         return '', 204
 
