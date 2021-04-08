@@ -24,7 +24,7 @@ def createBlueprint(injected_objects, actors=['fp', 'cp', 'co']):
     Parameters
     ----------
     :param injected_objects: Irgendwie werden hier wohl Klassen/Module/Funktionen übergeben zB endpointmanager
-    :param actor: 'cp', 'fp', 'co' for Capacity Provider, Flexibility Provider and Capacity Optimizer
+    :param actors: 'cp', 'fp', 'co' for Capacity Provider, Flexibility Provider and Capacity Optimizer
 
     Returns
     -------
@@ -55,7 +55,7 @@ def createBlueprint(injected_objects, actors=['fp', 'cp', 'co']):
 
     # register namespace at api (must be done for new namespaces too)
     if 'fp' in actors:
-        api.add_namespace(flex_provider_ns)  # , path="/"+namesp.name)
+        api.add_namespace(flex_provider_ns)
 
     if 'cp' in actors:
         api.add_namespace(cap_provider_ns)

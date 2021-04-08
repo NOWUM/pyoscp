@@ -129,6 +129,7 @@ def add_models_to_namespace(namespace, models):
     for model in models:
         namespace.models[model.name] = model
 
+
 def create_header_parser(namespace):
     header_parser = namespace.parser()
     header_parser.add_argument('Authorization', required=True, location='headers')
