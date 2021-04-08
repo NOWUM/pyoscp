@@ -3,7 +3,7 @@
 """
 Created on Thu Mar 18 00:21:29 2021
 
-@author: maurer
+@author: rottschaefer
 
 This module contains representation of used Enums and Classes from OSCP
 """
