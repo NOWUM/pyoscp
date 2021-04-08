@@ -1,27 +1,20 @@
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
-from oscp.json_models import GroupCapacityForecast, ForecastedBlock, Register, VersionUrl
-from oscp.json_models import Handshake, HandshakeAcknowledgement, Heartbeat, RequiredBehaviour
+from oscp.json_models import (create_header_parser, add_models_to_namespace,
+                              GroupCapacityForecast, ForecastedBlock, Register,
+                              VersionUrl, Handshake, HandshakeAcknowledgement,
+                              Heartbeat, RequiredBehaviour)
 import logging
 
 # a namespace is a group of api routes which have the same prefix
 # (i think mostly all are in the same namespace in oscp)
 flex_provider_ns = Namespace(name="fp", validate=True)
 
-flex_provider_ns.models[GroupCapacityForecast.name] = GroupCapacityForecast
-flex_provider_ns.models[ForecastedBlock.name] = ForecastedBlock
-flex_provider_ns.models[Register.name] = Register
-flex_provider_ns.models[VersionUrl.name] = VersionUrl
-flex_provider_ns.models[Handshake.name] = Handshake
-flex_provider_ns.models[HandshakeAcknowledgement.name] = HandshakeAcknowledgement
-flex_provider_ns.models[Heartbeat.name] = Heartbeat
-flex_provider_ns.models[RequiredBehaviour.name] = RequiredBehaviour
+models = [GroupCapacityForecast, ForecastedBlock, Register, VersionUrl,
+          Handshake, HandshakeAcknowledgement, Heartbeat, RequiredBehaviour]
 
-header_parser = flex_provider_ns.parser()
-header_parser.add_argument('Authorization', required=True, location='headers')
-header_parser.add_argument('X-Request-ID', required=True, location='headers')
-header_parser.add_argument('X-Correlation-ID', location='headers')
-header_parser.add_argument('X-Segment-Index', location='headers')
-header_parser.add_argument('X-Segment-Count', location='headers')
+add_models_to_namespace(flex_provider_ns, models)
+
+header_parser = create_header_parser(flex_provider_ns)
 
 
 @flex_provider_ns.route('/2.0/register',

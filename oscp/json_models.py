@@ -125,6 +125,15 @@ UpdateGroupMeasurements = Model('UpdateGroupMeasurements', {
 
 # models must be registered at a namespace.
 # If the API is somehow using a given model, you should add it to the array
-def add_models_to_namespace(namespace):
-    for model in [GroupCapacityForecast, ForecastedBlock]:
+def add_models_to_namespace(namespace, models):
+    for model in models:
         namespace.models[model.name] = model
+
+def create_header_parser(namespace):
+    header_parser = namespace.parser()
+    header_parser.add_argument('Authorization', required=True, location='headers')
+    header_parser.add_argument('X-Request-ID', required=True, location='headers')
+    header_parser.add_argument('X-Correlation-ID', location='headers')
+    header_parser.add_argument('X-Segment-Index', location='headers')
+    header_parser.add_argument('X-Segment-Count', location='headers')
+    return header_parser

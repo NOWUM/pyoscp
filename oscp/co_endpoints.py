@@ -1,20 +1,16 @@
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
-from oscp.json_models import GroupCapacityForecast, ForecastedBlock
+from oscp.json_models import (add_models_to_namespace, create_header_parser,
+                              GroupCapacityForecast, ForecastedBlock)
 import logging
 
 # a namespace is a group of api routes which have the same prefix
 # (i think mostly all are in the same namespace in oscp)
 cap_optimizer_ns = Namespace(name="co", validate=True)
 
-cap_optimizer_ns.models[GroupCapacityForecast.name] = GroupCapacityForecast
-cap_optimizer_ns.models[ForecastedBlock.name] = ForecastedBlock
+models = [GroupCapacityForecast, ForecastedBlock]
 
-header_parser = cap_optimizer_ns.parser()
-header_parser.add_argument('Authorization', required=True, location='headers')
-header_parser.add_argument('X-Request-ID', required=True, location='headers')
-header_parser.add_argument('X-Correlation-ID', location='headers')
-header_parser.add_argument('X-Segment-Index', location='headers')
-header_parser.add_argument('X-Segment-Count', location='headers')
+add_models_to_namespace(cap_optimizer_ns, models)
+header_parser = create_header_parser(cap_optimizer_ns)
 
 
 @cap_optimizer_ns.route('/2.0/register', doc={"description": "API Endpoint for Registration of participants"})

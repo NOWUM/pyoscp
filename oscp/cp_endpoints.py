@@ -1,29 +1,21 @@
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
-from oscp.json_models import ForecastedBlock, Register, VersionUrl, Heartbeat, HandshakeAcknowledgement, \
-    AdjustGroupCapacityForecast, GroupCapacityComplianceError, UpdateGroupMeasurements, Measurements, \
-    RequiredBehaviour
+from oscp.json_models import (create_header_parser, add_models_to_namespace,
+                              ForecastedBlock, Register, VersionUrl, Heartbeat,
+                              HandshakeAcknowledgement, AdjustGroupCapacityForecast,
+                              GroupCapacityComplianceError, UpdateGroupMeasurements,
+                              Measurements, RequiredBehaviour)
 import logging
 
 # a namespace is a group of api routes which have the same prefix
 # (i think mostly all are in the same namespace in oscp)
 cap_provider_ns = Namespace(name="cp", validate=True)
-cap_provider_ns.models[ForecastedBlock.name] = ForecastedBlock
-cap_provider_ns.models[Register.name] = Register
-cap_provider_ns.models[VersionUrl.name] = VersionUrl
-cap_provider_ns.models[Heartbeat.name] = Heartbeat
-cap_provider_ns.models[HandshakeAcknowledgement.name] = HandshakeAcknowledgement
-cap_provider_ns.models[AdjustGroupCapacityForecast.name] = AdjustGroupCapacityForecast
-cap_provider_ns.models[GroupCapacityComplianceError.name] = GroupCapacityComplianceError
-cap_provider_ns.models[UpdateGroupMeasurements.name] = UpdateGroupMeasurements
-cap_provider_ns.models[Measurements.name] = Measurements
-cap_provider_ns.models[RequiredBehaviour.name] = RequiredBehaviour
 
-header_parser = cap_provider_ns.parser()
-header_parser.add_argument('Authorization', required=True, location='headers')
-header_parser.add_argument('X-Request-ID', required=True, location='headers')
-header_parser.add_argument('X-Correlation-ID', location='headers')
-header_parser.add_argument('X-Segment-Index', location='headers')
-header_parser.add_argument('X-Segment-Count', location='headers')
+models = [ForecastedBlock, Register, VersionUrl,
+          HandshakeAcknowledgement, Heartbeat, RequiredBehaviour,
+          AdjustGroupCapacityForecast, UpdateGroupMeasurements, GroupCapacityComplianceError, Measurements]
+
+add_models_to_namespace(cap_provider_ns, models)
+header_parser = create_header_parser(cap_provider_ns)
 
 
 @cap_provider_ns.route('/2.0/register', doc={"description": "API Endpoint for Registration of participants"})
