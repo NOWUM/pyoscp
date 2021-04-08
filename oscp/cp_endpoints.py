@@ -84,7 +84,7 @@ class heartbeat(Resource):
 
 @cap_provider_ns.route('/2.0/adjust_group_capacity_forecast', doc={"description": "API Endpoint for capacity management"})
 @cap_provider_ns.expect(header_parser)  # validate=True
-@cap_provider_ns.response(204, 'No Content!!!')
+@cap_provider_ns.response(204, 'No Content..')
 @cap_provider_ns.response(404, 'Not found!')
 class adjustGroupCapacityForecast(Resource):
     def __init__(self, api=None, *args, **kwargs):
@@ -118,6 +118,7 @@ class groupCapacityComplianceError(Resource):
         """
         self.capacityprovider.handleGroupCapacityComplianceError(
             cap_provider_ns.payload)
+
         return '', 204
 
 
