@@ -11,7 +11,7 @@ from packaging import version
 
 """
 Grundlegende Datenbasis des gesamten Netz
-Informationen mit allen Netzanschlusspunkten, inkl. 
+Informationen mit allen Netzanschlusspunkten, inkl.
  * maximaler Kapazität
  * genutzter Kapatität
  * maximaler Flexibilität
@@ -104,16 +104,40 @@ class FlexibilityManager(object):
         self.endpoints.append(Endpoint(reg))
 
 
-# the forecastManager is independent from the communication and should be replacable
-# by using different forecastmanagers, we can inject different strategies into the system
-class ForecastManager(object):
+class CapacityProviderManager():
 
     def __init__(self):
-        self.forecasts = []
+        self.stuff = []
 
-    def forecastCapacities(self):
-        # calculate grid utilization and update the forecasted capacities for each flexibility
-        return
+    def handleAdjustGroupCapacityForecast(self, value):
+        pass
+
+    def handleGroupCapacityComplianceError(self, value):
+        pass
+
+    def handleUpdateGroupMeasurements(self, payload):
+        pass
+
+
+class FlexibilityProviderManager():
+
+    def __init__(self):
+        self.stuff = []
+
+    def handleUpdateGroupCapacityForecast(self, value):
+        pass
+
+
+class CapacityOptimizerManager():
+
+    def __init__(self):
+        self.stuff = []
+
+    def handleUpdateGroupCapacityForecast(self, value):
+        pass
+
+    def handleUpdateAssetMeasurements(self, value):
+        pass
 
 
 if __name__ == '__main__':
@@ -127,11 +151,15 @@ if __name__ == '__main__':
         return redirect('/oscp/ui')
 
     # inject dependencies here
-    fcm = ForecastManager()
+    cpm = CapacityProviderManager()
+    com = CapacityOptimizerManager()
+    fpm = FlexibilityProviderManager()
     epm = FlexibilityManager()
-    injected_objects = {'db': 'db_test',
-                        'endpointmanager': epm,
-                        'forecastmanager': fcm}
+    injected_objects = {'endpointmanager': epm,
+                        'forecastmanager': cpm,
+                        'flexibilityprovider': fpm,
+                        'capacityprovider': cpm,
+                        'capacityoptimizer': com}
 
     # the injected_objects are used to route requests from the namespace to the
     # logic containing classes like ForecastManager

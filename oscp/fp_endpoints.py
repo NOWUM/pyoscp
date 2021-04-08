@@ -24,33 +24,6 @@ header_parser.add_argument('X-Segment-Index', location='headers')
 header_parser.add_argument('X-Segment-Count', location='headers')
 
 
-@flex_provider_ns.route('/2.0/update_group_capacity_forecast',
-                        doc={"description": "API Endpoint for Session management"})
-@flex_provider_ns.expect(header_parser)  # validate=True
-@flex_provider_ns.response(204, 'No Content')
-class updateGroupCapacityForecast(Resource):
-
-    def __init__(self, api=None, *args, **kwargs):
-        # forecastmanager is a black box dependency, which contains the logic
-        self.forecastmanager = kwargs['forecastmanager']
-        super().__init__(api, *args, **kwargs)
-
-    @flex_provider_ns.expect(GroupCapacityForecast)
-    @flex_provider_ns.marshal_with(GroupCapacityForecast)
-    # @forecast_ns.response(204, 'No Content')
-    def post(self):
-        """
-        The message is sent from Capacity Provider to the Flexibility Provider and from Flexibility Provider to Capacity Optimizer which
-        should generate an Optimum capacity forecast for the capacity that should be used in the specific group.
-        """
-
-        self.forecastmanager.forecasts.append(flex_provider_ns.payload)
-        # using logging instead of print is threadsafe and non-blocking
-        # but you can't add multiple strings and expect that they get joined
-        logging.info(str(self.forecastmanager.forecasts))
-        return '', 204
-
-
 @flex_provider_ns.route('/2.0/register',
                         doc={"description": "API Endpoint for Registration of participants.(WIESO STEHT DAS HIER?)\n"})
 @flex_provider_ns.expect(header_parser)  # validate=True
@@ -134,4 +107,29 @@ class heartbeat(Resource):
         Please.
         """
 
+        return '', 204
+
+
+@flex_provider_ns.route('/2.0/update_group_capacity_forecast',
+                        doc={"description": "API Endpoint for Session management"})
+@flex_provider_ns.expect(header_parser)  # validate=True
+@flex_provider_ns.response(204, 'No Content')
+class updateGroupCapacityForecast(Resource):
+
+    def __init__(self, api=None, *args, **kwargs):
+        # forecastmanager is a black box dependency, which contains the logic
+        self.flexibilityprovider = kwargs['flexibilityprovider']
+        super().__init__(api, *args, **kwargs)
+
+    @flex_provider_ns.expect(GroupCapacityForecast)
+    @flex_provider_ns.marshal_with(GroupCapacityForecast)
+    # @forecast_ns.response(204, 'No Content')
+    def post(self):
+        """
+        The message is sent from Capacity Provider to the Flexibility Provider and from Flexibility Provider to Capacity Optimizer which
+        should generate an Optimum capacity forecast for the capacity that should be used in the specific group.
+        """
+
+        self.flexibilityprovider.handleUpdateGroupCapacityForecast(
+            flex_provider_ns.payload)
         return '', 204

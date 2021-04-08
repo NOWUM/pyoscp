@@ -95,7 +95,7 @@ class heartbeat(Resource):
 @cap_provider_ns.response(404, 'Not found!')
 class adjustGroupCapacityForecast(Resource):
     def __init__(self, api=None, *args, **kwargs):
-        self.forecastmanager = kwargs['forecastmanager']
+        self.capacityprovider = kwargs['capacityprovider']
         super().__init__(api, *args, **kwargs)
 
     @cap_provider_ns.expect(AdjustGroupCapacityForecast)
@@ -104,7 +104,8 @@ class adjustGroupCapacityForecast(Resource):
         Describe me.
         Please.
         """
-        self.forecastmanager.handleCapacityForecast(cap_provider_ns.payload)
+        self.capacityprovider.handleUpdateGroupCapacityForecast(
+            cap_provider_ns.payload)
         return '', 204
 
 
@@ -113,7 +114,7 @@ class adjustGroupCapacityForecast(Resource):
 @cap_provider_ns.response(204, 'No Content')
 class groupCapacityComplianceError(Resource):
     def __init__(self, api=None, *args, **kwargs):
-        self.forecastmanager = kwargs['forecastmanager']
+        self.capacityprovider = kwargs['capacityprovider']
         super().__init__(api, *args, **kwargs)
 
     @cap_provider_ns.expect(GroupCapacityComplianceError)
@@ -122,7 +123,8 @@ class groupCapacityComplianceError(Resource):
         Describe me.
         Please.
         """
-
+        self.capacityprovider.handleGroupCapacityComplianceError(
+            cap_provider_ns.payload)
         return '', 204
 
 
@@ -131,7 +133,7 @@ class groupCapacityComplianceError(Resource):
 @cap_provider_ns.response(204, 'No Content')
 class updateGroupMeasurements(Resource):
     def __init__(self, api=None, *args, **kwargs):
-        self.forecastmanager = kwargs['forecastmanager']
+        self.capacityprovider = kwargs['capacityprovider']
         super().__init__(api, *args, **kwargs)
 
     @cap_provider_ns.expect(UpdateGroupMeasurements)
@@ -140,5 +142,6 @@ class updateGroupMeasurements(Resource):
         Describe me.
         Please.
         """
-
+        self.capacityprovider.handleUpdateGroupMeasurements(
+            cap_provider_ns.payload)
         return '', 204

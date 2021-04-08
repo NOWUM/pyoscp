@@ -47,8 +47,7 @@ class heartbeat(Resource):
 class updateGroupCapacityForecast(Resource):
 
     def __init__(self, api=None, *args, **kwargs):
-        # forecastmanager is a black box dependency, which contains the logic
-        self.forecastmanager = kwargs['forecastmanager']
+        self.capacityoptimizer = kwargs['capacityoptimizer']
         super().__init__(api, *args, **kwargs)
 
     @cap_optimizer_ns.expect(GroupCapacityForecast)
@@ -60,10 +59,8 @@ class updateGroupCapacityForecast(Resource):
         should generate an Optimum capacity forecast for the capacity that should be used in the specific group.
         """
 
-        self.forecastmanager.forecasts.append(cap_optimizer_ns.payload)
-        # using logging instead of print is threadsafe and non-blocking
-        # but you can't add multiple strings and expect that they get joined
-        logging.info(str(self.forecastmanager.forecasts))
+        self.capacityoptimizer.handleUpdateGroupCapacityForecast(
+            cap_optimizer_ns.payload)
         return '', 204
 
 
@@ -73,5 +70,13 @@ class updateGroupCapacityForecast(Resource):
 class updateAssetMeasurements(Resource):
 
     def __init__(self, api=None, *args, **kwargs):
-        self.this = None
-        self.that = None
+        self.capacityoptimizer = kwargs['capacityoptimizer']
+        super().__init__(api, *args, **kwargs)
+
+    @cap_optimizer_ns.expect(GroupCapacityForecast)
+    @cap_optimizer_ns.marshal_with(GroupCapacityForecast)
+    def post(self):
+
+        self.capacityoptimizer.handleUpdateAssetMeasurements(
+            cap_optimizer_ns.payload)
+        return '', 204

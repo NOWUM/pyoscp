@@ -3,3 +3,4 @@ data
 .spyproject
 .idea
 .idea/
+*.orig
