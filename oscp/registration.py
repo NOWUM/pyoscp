@@ -43,7 +43,7 @@ def namespace_registration(namespace):
             return '', 204
 
         def delete(self):
-            self.registrationmanager.unregister(namespace.payload)
+            self.registrationmanager.unregister()
             return '', 204
 
     @namespace.route('/handshake', doc={"description": "API Endpoint for Handshake of participants"})
