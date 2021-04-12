@@ -1,8 +1,7 @@
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
 from oscp.json_models import (add_models_to_namespace, create_header_parser,
                               GroupCapacityForecast, ForecastedBlock)
-import logging
-
+from oscp.registration import namespace_registration
 # a namespace is a group of api routes which have the same prefix
 # (i think mostly all are in the same namespace in oscp)
 cap_optimizer_ns = Namespace(name="co", validate=True)
@@ -11,30 +10,7 @@ models = [GroupCapacityForecast, ForecastedBlock]
 
 add_models_to_namespace(cap_optimizer_ns, models)
 header_parser = create_header_parser(cap_optimizer_ns)
-
-
-@cap_optimizer_ns.route('/2.0/register', doc={"description": "API Endpoint for Registration of participants"})
-@cap_optimizer_ns.expect(header_parser)  # validate=True
-@cap_optimizer_ns.response(204, 'No Content')
-class register(Resource):
-    def __init__(self):
-        pass
-
-
-@cap_optimizer_ns.route('/2.0/handshake', doc={"description": "API Endpoint for Registration of participants"})
-@cap_optimizer_ns.expect(header_parser)  # validate=True
-@cap_optimizer_ns.response(204, 'No Content')
-class handshake(Resource):
-    def __init__(self):
-        pass
-
-
-@cap_optimizer_ns.route('/2.0/heartbeat', doc={"description": "API Endpoint for Registration of participants"})
-@cap_optimizer_ns.expect(header_parser)  # validate=True
-@cap_optimizer_ns.response(204, 'No Content')
-class heartbeat(Resource):
-    def __init__(self):
-        pass
+namespace_registration(cap_optimizer_ns)
 
 
 @cap_optimizer_ns.route('/2.0/update_group_capacity_forecast', doc={"description": "API Endpoint for Session management"})

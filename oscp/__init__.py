@@ -42,8 +42,8 @@ def createBlueprint(injected_objects, actors=['fp', 'cp', 'co']):
         title="OSCP OpenAPI Documentation",
         description="Welcome to the OpenAPI documentation site!",
         # the ui can be accessed from url_prefix+doc
-        doc="/ui",
         authorizations=authorizations,
+        doc="/ui",
         default_label="Python OSCP Framework"
     )
 

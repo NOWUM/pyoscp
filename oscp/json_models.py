@@ -26,10 +26,10 @@ RequiredBehaviour = Model('RequiredBehaviour', {
                                                      'value must be 1 or higher. If the sender is not interested '
                                                      'in the heartbeat of the receiver, this field can be '
                                                      'omitted.'),
-    'measurement_configuration': fields.String(enum=measurement_configuration,
+    'measurement_configuration': fields.List(fields.String(enum=measurement_configuration,
                                                description='For determining how measurements are aggregated. '
                                                            'Providing multiple configurations is allowed. An empty '
-                                                           'array represents no configurations.')
+                                                           'array represents no configurations.'))
 })
 
 VersionUrl = Model('VersionUrl', {
