@@ -5,7 +5,7 @@ from oscp.json_models import (create_header_parser, add_models_to_namespace,
 
 # a namespace is a group of api routes which have the same prefix
 # (i think mostly all are in the same namespace in oscp)
-flex_provider_ns = Namespace(name="fp", validate=True)
+flex_provider_ns = Namespace(name="fp", validate=True, path="/fp/2.0")
 
 models = [GroupCapacityForecast, ForecastedBlock]
 
@@ -15,7 +15,7 @@ header_parser = create_header_parser(flex_provider_ns)
 namespace_registration(flex_provider_ns)
 
 
-@flex_provider_ns.route('/2.0/update_group_capacity_forecast',
+@flex_provider_ns.route('/update_group_capacity_forecast',
                         doc={"description": "API Endpoint for Session management"})
 @flex_provider_ns.expect(header_parser)  # validate=True
 @flex_provider_ns.response(204, 'No Content')
