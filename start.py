@@ -276,39 +276,41 @@ class RegistrationMan():
                 logging.error('Error processing endpoint'+endpoint['token'])
                 logging.error(e)
 
+
+logging.basicConfig(level=logging.INFO)
+from flask import Flask, redirect
+app = Flask(__name__)
+
+@app.route('/', methods=['POST', 'GET'])
+def home():
+    # return redirect('/oscp/fp/2.0/ui')
+    return redirect('/oscp/ui')
+
+# inject dependencies here
+cpm = CapacityProviderManager()
+com = CapacityOptimizerManager()
+fpm = FlexibilityProviderManager()
+epm = FlexibilityManager()
+
+HOST_URL = 'http://localhost:5000'
+version_urls = [{'version': '2.0', 'base_url': HOST_URL+'/oscp/fp/2.0'}]
+regman = RegistrationMan(version_urls)
+injected_objects = {'endpointmanager': epm,
+                    'forecastmanager': cpm,
+                    'flexibilityprovider': fpm,
+                    'capacityprovider': cpm,
+                    'capacityoptimizer': com,
+                    'registrationmanager': regman}
+
+# the injected_objects are used to route requests from the namespace to the
+# logic containing classes like ForecastManager
+blueprint = createBlueprint(injected_objects)  # , actors=['co'])
+
+# using a blueprint allows us to initialize everything without an app context
+# this is cleaner, as the oscp module never needs access to the actual Flask server
+app.register_blueprint(blueprint)
+
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-    from flask import Flask, redirect
-    app = Flask(__name__)
-
-    @app.route('/', methods=['POST', 'GET'])
-    def home():
-        # return redirect('/oscp/fp/2.0/ui')
-        return redirect('/oscp/ui')
-
-    # inject dependencies here
-    cpm = CapacityProviderManager()
-    com = CapacityOptimizerManager()
-    fpm = FlexibilityProviderManager()
-    epm = FlexibilityManager()
-
-    HOST_URL = 'http://localhost:5000'
-    version_urls = [{'version': '2.0', 'base_url': HOST_URL+'/oscp/fp/2.0'}]
-    regman = RegistrationMan(version_urls)
-    injected_objects = {'endpointmanager': epm,
-                        'forecastmanager': cpm,
-                        'flexibilityprovider': fpm,
-                        'capacityprovider': cpm,
-                        'capacityoptimizer': com,
-                        'registrationmanager': regman}
-
-    # the injected_objects are used to route requests from the namespace to the
-    # logic containing classes like ForecastManager
-    blueprint = createBlueprint(injected_objects)  # , actors=['co'])
-
-    # using a blueprint allows us to initialize everything without an app context
-    # this is cleaner, as the oscp module never needs access to the actual Flask server
-    app.register_blueprint(blueprint)
 
     app.run()
 

@@ -1,0 +1,12 @@
+version: "3"
+services:
+  SmartChargingHub:
+    build: .
+    image: registry.git.fh-aachen.de/smarte_ladesaeulen/pyoscp:latest
+    container_name: pyoscp
+    ports:
+      - "9005:9000" # http
+    volumes:
+      - ./data:/data
+    environment:
+      HOST_URL: "http://localhost:9005"
