@@ -5,7 +5,6 @@ Created on Sun Mar 28 18:48:33 2021
 @author: rottschaefer
 backend app for capacity provider
 """
-from typing import List
 import secrets
 import requests as r
 import oscp.json_models as oj
@@ -164,13 +163,24 @@ class CapacityOptimizerManager():
         pass
 
 from werkzeug.exceptions import Unauthorized, Forbidden
+import requests
+import threading
 
 class RegistrationMan():
+
     def __init__(self, version_urls: list):
         self.endpoints = {}
-        self.handshaked = {}
-        self.heartbeats = {}
         self.version_urls = version_urls
+        # run background job every 5 seconds
+        self.stop_thread = False
+        def bck_job():
+            ticker = threading.Event()
+            while not ticker.wait(5):
+                self.background_job()
+                if self.stop_thread:
+                    break
+        self.t = threading.Thread(target=bck_job, daemon=True)
+        self.t.start()
 
     def _check_access_token(self):
         token = request.headers.get("Authorization")
@@ -187,7 +197,7 @@ class RegistrationMan():
         logging.warning('got register:'+str(payload))
         tokenC = 'Token '+secrets.token_urlsafe(32)
         # <- payload contains information to access client (tokenB)
-        self.endpoints[tokenC] = payload
+        self.endpoints[tokenC] = {'register':payload}
         # TODO check version use latest version
         base = payload['version_url'][0]['base_url']
         # check if base is in version_urls, to mitigate possible DoS through recursion
@@ -207,7 +217,7 @@ class RegistrationMan():
     def updateEndpoint(self, payload: oj.Register):
         token = self._check_access_token()
         if token in self.endpoints.keys():
-            self.endpoints[token] = payload
+            self.endpoints[token]['register'] = payload
         # no user feedback specified. Will always return 204..
 
     def unregister(self):
@@ -216,27 +226,58 @@ class RegistrationMan():
 
     def handleHandshake(self, payload: oj.Handshake):
         token = self._check_access_token()
-        self.handshaked[token] = payload['required_behaviour']
+        self.endpoints[token]['new']=True
+        self.endpoints[token]['req_behavior']=payload['required_behaviour']
         # TODO set up heartbeat job and send handshakeack (somehow use a listener)
 
         # TODO always reply with 403 if not handshaked yet
 
     def handleHandshakeAck(self, payload: oj.HandshakeAcknowledgement):
         token = self._check_access_token()
-        self.handshaked[token] = payload['required_behaviour']
+        self.endpoints[token]['new']=False
+        self.endpoints[token]['req_behavior']=payload['required_behaviour']
         # TODO set up heartbeat job (somehow use a listener)
         pass
 
     def handleHeartbeat(self, payload: oj.Heartbeat):
         token = self._check_access_token()
-        self.heartbeats[token] = payload['offline_mode_at']
-        # TODO setup online/offline listener here
+        self.endpoints[token]['offline_at'] = payload['offline_mode_at']
+        # TODO setup online/offline listener
         logging.info("got a heartbeat. Will be offline at:" +
                      str(payload['offline_mode_at']))
 
+    def background_job(self):
+        logging.info('background job running')
+        for endpoint in self.endpoints.values():
+            try:
+                if endpoint.get('new')==True:
+                    # send ack for new handshakes
+                    interval = endpoint['req_behavior']['heartbeat_interval']
+                    token = endpoint['register']['token']
+                    url = endpoint['register']['version_url'][0]['base_url']
+                    data={} # not interested in heartbeats
+                    requests.post(url+'/handshake_acknowledgment',headers={'Authorization': token, 'X-Request-ID':'5'},json=data)
+                    endpoint['new']=False
+
+                if endpoint.get('req_behavior')!=None:
+                    nb = endpoint.get('next_heartbeat')
+                    if nb!=None and (nb<datetime.now()):
+                        # next heartbeat is due, send it
+
+                        interval = endpoint['req_behavior']['heartbeat_interval']
+                        endpoint['next_heartbeat']=datetime.now()+datetime.timedelta(seconds=interval)
+                        token = endpoint['register']['token']
+                        url = endpoint['register']['version_url'][0]['base_url']+'/heartbeat'
+
+                        logging.info('send heartbeat to'+url)
+                        data={'offline_mode_at': datetime.now()+3*datetime.timedelta(seconds=interval)}
+                        requests.post(url,headers={'Authorization': token, 'X-Request-ID':'5'},json=data)
+            except Exception as e:
+                logging.error('Error processing endpoint'+endpoint['token'])
+                logging.error(e)
 
 if __name__ == '__main__':
-
+    logging.basicConfig(level=logging.INFO)
     from flask import Flask, redirect
     app = Flask(__name__)
 
@@ -270,3 +311,5 @@ if __name__ == '__main__':
     app.register_blueprint(blueprint)
 
     app.run()
+
+    regman.stop_thread=True
