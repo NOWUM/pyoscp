@@ -152,6 +152,7 @@ from werkzeug.exceptions import Unauthorized, Forbidden
 import requests
 import threading
 
+
 class RegistrationMan():
 
     def __init__(self, version_urls: list):
