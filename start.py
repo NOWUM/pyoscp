@@ -14,20 +14,6 @@ from oscp import createBlueprint
 from packaging import version
 from flask import request
 
-"""
-Grundlegende Datenbasis des gesamten Netz
-Informationen mit allen Netzanschlusspunkten, inkl.
- * maximaler Kapazität
- * genutzter Kapatität
- * maximaler Flexibilität
- * genutzter Flexibilität
- * registrierten Flexibilitäten
-
-Macht hier für Forecasts eine Zeitreihe Sinn?
-Macht ein Pandas Dataframe Sinn?
-"""
-grid_data = []
-
 
 class Endpoint(object):
 
