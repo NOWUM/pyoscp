@@ -23,7 +23,7 @@ def createBlueprint(injected_objects, actors=['fp', 'cp', 'co']):
 
     Parameters
     ----------
-    :param injected_objects: Irgendwie werden hier wohl Klassen/Module/Funktionen übergeben zB endpointmanager
+    :param injected_objects: Providing endpoint managers
     :param actors: 'cp', 'fp', 'co' for Capacity Provider, Flexibility Provider and Capacity Optimizer
 
     Returns

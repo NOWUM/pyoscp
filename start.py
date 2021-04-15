@@ -148,6 +148,7 @@ class CapacityOptimizerManager():
     def handleUpdateAssetMeasurements(self, value):
         pass
 
+
 from werkzeug.exceptions import Unauthorized, Forbidden
 import requests
 import threading
@@ -186,7 +187,7 @@ class RegistrationMan():
         logging.info('got register:'+str(payload))
         tokenC = 'Token '+secrets.token_urlsafe(32)
         # <- payload contains information to access client (tokenB)
-        self.endpoints[tokenC] = {'register':payload}
+        self.endpoints[tokenC] = {'register': payload}
         # TODO check version use latest version
         base = payload['version_url'][0]['base_url']
         data = {'token': tokenC, 'version_url': self.version_urls}
