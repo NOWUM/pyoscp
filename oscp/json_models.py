@@ -11,11 +11,14 @@ This module contains representation of used Enums and Classes from OSCP
 from flask_restx import fields, Model
 
 energy_measurement_unit = ['WH', 'KWH']
+instantaneous_measurement_unit = ['A', 'W', 'KW', 'WH', 'KWH']
 direction = ['NET', 'IMPORT', 'EXPORT']
+energy_flow_direction = ['NET', 'IMPORT', 'EXPORT']
 energy_type = ['FLEXIBLE', 'NONFLEXIBLE', 'TOTAL']
 forecastedblock_unit_type = ['A', 'W', 'KW', 'WH', 'KWH']
 measurement_configuration = ['CONTINUOUS', 'INTERMITTENT']
 phase_indicator_type = ['UNKNOWN', 'ONE', 'TWO', 'THREE', 'ALL']
+phase_indicator = ['UNKNOWN', 'ONE', 'TWO', 'THREE', 'ALL']
 asset_category = ['CHARGING', 'CONSUMPTION', 'GENERATION', 'STORAGE']
 capacity_forecast_type = ['CONSUMPTION', 'GENERATION',
                           'FALLBACK_CONSUMPTION', 'FALLBACK_GENERATION', 'OPTIMUM']
@@ -115,11 +118,50 @@ Measurements = Model('Measurements', {
     'initial_measure_time': fields.DateTime()
 })
 
+EnergyMeasurement = Model('EnergyMeasurement', {
+    'value': fields.Float(description='The value of the actual measured energy.'),
+    'phase': fields.String(enum=phase_indicator,
+                           description='This field identifies the phase that is measured (if applicable).'),
+    'unit': fields.String(enum=energy_measurement_unit, description='Unit of this energy value (either Wh or kWh).'),
+    'energy_type': fields.String(enum=energy_type, description='Indicates whether flexible, non-flexible or total '
+                                                               'energy is reported. When absent, '
+                                                               'TOTAL is assumed.'),
+    'direction': fields.String(enum=energy_flow_direction, description='Indicates the direction the energy has flown into ('
+                                                           'import, export or net).'),
+
+    'measure_time': fields.DateTime(description='The moment the actual meter reading took place.'),
+    'initial_measure_time': fields.DateTime(description='Optional. The moment the measurement has (re)started '
+                                                        '(i.e. the moment an EV charge session starts).'
+                                                        'If the other party (recipient) defined a RequiredBehaviour '
+                                                        'with INTERMITTENT as part of the measurement_configuration field, ' 
+                                                        'then the initial_measure_time field MUST be set.')
+})
+
+InstantaneousMeasurement = Model('InstantaneousMeasurement', {
+    'value': fields.Float(description='The actual measured value.'),
+    'phase': fields.String(enum=phase_indicator,
+                           description='This field identifies the phase that is measured.'),
+    'unit': fields.String(enum=instantaneous_measurement_unit, description='Unit of the value.'),
+    'measure_time': fields.DateTime(description='The moment the actual meter reading took place.')
+})
+
+AssetMeasurement = Model('AssetMeasurement', {
+    'asset_id': fields.String(description='Uniquely identifies the Flexibility Resource.'),
+    'asset_category': fields.String(enum=asset_category, description='Defines the type of Flexibility Resource that is measured.'),
+    'energy_measurement': fields.Nested(EnergyMeasurement, description='Optional. Represents a read out of an accumulative energy meter.'),
+    'instantaneous_measurement': fields.Nested(InstantaneousMeasurement, description='Optional. Represents an instantaneous measuring.')
+})
+
 UpdateGroupMeasurements = Model('UpdateGroupMeasurements', {
     'group_id': fields.String(
         description='The id of the area in which the Flexibility Provider has Flexibility Resources connected to the '
                     'grid.'),
     'measurements': fields.Nested(Measurements)
+})
+
+UpdateAssetMeasurements = Model('UpdateAssetMeasurements', {
+    'group_id': fields.String(description='The id of the area which the Flexibility Resources (assets) are part of.'),
+    'measurements': fields.Nested(AssetMeasurement, description='Contains the accumulated measurements.')
 })
 
 
