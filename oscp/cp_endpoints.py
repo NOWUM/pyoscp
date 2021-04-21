@@ -1,4 +1,4 @@
-from oscp.registration import namespace_registration
+from registration import namespace_registration
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
 from oscp.json_models import (create_header_parser, add_models_to_namespace,
                               ForecastedBlock, AdjustGroupCapacityForecast,
