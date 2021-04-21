@@ -3,7 +3,7 @@
 """
 Created on Thu Mar 18 00:21:29 2021
 
-@author: rottschaefer
+@author: rottschaefer, gruell
 
 This module contains representation of used Enums and Classes from OSCP
 """
@@ -12,12 +12,10 @@ from flask_restx import fields, Model
 
 energy_measurement_unit = ['WH', 'KWH']
 instantaneous_measurement_unit = ['A', 'W', 'KW', 'WH', 'KWH']
-direction = ['NET', 'IMPORT', 'EXPORT']
+forecasted_block_unit = ['A', 'W', 'KW', 'WH', 'KWH']
 energy_flow_direction = ['NET', 'IMPORT', 'EXPORT']
 energy_type = ['FLEXIBLE', 'NONFLEXIBLE', 'TOTAL']
-forecastedblock_unit_type = ['A', 'W', 'KW', 'WH', 'KWH']
 measurement_configuration = ['CONTINUOUS', 'INTERMITTENT']
-phase_indicator_type = ['UNKNOWN', 'ONE', 'TWO', 'THREE', 'ALL']
 phase_indicator = ['UNKNOWN', 'ONE', 'TWO', 'THREE', 'ALL']
 asset_category = ['CHARGING', 'CONSUMPTION', 'GENERATION', 'STORAGE']
 capacity_forecast_type = ['CONSUMPTION', 'GENERATION',
@@ -63,9 +61,9 @@ Heartbeat = Model('Heartbeat', {
 
 ForecastedBlock = Model('ForecastedBlock', {
     'capacity': fields.Float(description='The value of the forecast.'),
-    'phase': fields.String(enum=phase_indicator_type,
+    'phase': fields.String(enum=phase_indicator,
                            description='Identifies the phase that the forecast is meant for.'),
-    'unit': fields.String(enum=forecastedblock_unit_type, description='Unit of the capacity value.'),
+    'unit': fields.String(enum=forecasted_block_unit, description='Unit of the capacity value.'),
     'start_time': fields.DateTime(),
     'end_time': fields.DateTime(),
 
@@ -104,20 +102,6 @@ GroupCapacityComplianceError = Model('GroupCapacityComplianceError', {
                                      description='Optional. The list of forecast blocks that FP cannot comply to.')
 })
 
-Measurements = Model('Measurements', {
-    'value': fields.Float(),
-    'phase': fields.String(enum=phase_indicator_type,
-                           description='Identifies the phase that the forecast is meant for.'),
-    'unit': fields.String(enum=energy_measurement_unit, description='A unit of energy measurement.'),
-    'direction': fields.String(enum=direction, description='Indicates the direction the energy has flown into ('
-                                                           'import, export or net).'),
-    'energy_type': fields.String(enum=energy_type, description='Indicates whether flexible, non-flexible or total '
-                                                               'energy is reported. When absent, '
-                                                               'TOTAL is assumed.'),
-    'measure_time': fields.DateTime(),
-    'initial_measure_time': fields.DateTime()
-})
-
 EnergyMeasurement = Model('EnergyMeasurement', {
     'value': fields.Float(description='The value of the actual measured energy.'),
     'phase': fields.String(enum=phase_indicator,
@@ -153,10 +137,8 @@ AssetMeasurement = Model('AssetMeasurement', {
 })
 
 UpdateGroupMeasurements = Model('UpdateGroupMeasurements', {
-    'group_id': fields.String(
-        description='The id of the area in which the Flexibility Provider has Flexibility Resources connected to the '
-                    'grid.'),
-    'measurements': fields.Nested(Measurements)
+    'group_id': fields.String(description='The id of the area the Flexibility Resources (assets) are part of.'),
+    'measurements': fields.Nested(EnergyMeasurement, description='Contains the accumulated measurements.')
 })
 
 UpdateAssetMeasurements = Model('UpdateAssetMeasurements', {
