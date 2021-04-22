@@ -1,7 +1,7 @@
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
 from oscp.registration import namespace_registration
 from oscp.json_models import (create_header_parser, add_models_to_namespace,
-                              ForecastedBlock, AdjustGroupCapacityForecast,
+                              ForecastedBlock, UpdateGroupCapacityForecast,
                               GroupCapacityComplianceError, UpdateGroupMeasurements,
                               EnergyMeasurement)
 
@@ -9,7 +9,7 @@ from oscp.json_models import (create_header_parser, add_models_to_namespace,
 # (i think mostly all are in the same namespace in oscp)
 energy_provider_ns = Namespace(name="ep", validate=True, path="/ep/2.0")
 
-models = [ForecastedBlock, AdjustGroupCapacityForecast, UpdateGroupMeasurements,
+models = [ForecastedBlock, UpdateGroupCapacityForecast, UpdateGroupMeasurements,
           GroupCapacityComplianceError, EnergyMeasurement]
 
 add_models_to_namespace(energy_provider_ns, models)
@@ -26,7 +26,7 @@ class adjustGroupCapacityForecast(Resource):
         self.capacityprovider = kwargs['energyprovider']
         super().__init__(api, *args, **kwargs)
 
-    @energy_provider_ns.expect(AdjustGroupCapacityForecast)
+    @energy_provider_ns.expect(UpdateGroupCapacityForecast)
     def post(self):
         """
         Describe me.
