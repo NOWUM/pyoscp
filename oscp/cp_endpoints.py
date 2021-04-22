@@ -1,16 +1,16 @@
-from registration import namespace_registration
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
+from oscp.registration import namespace_registration
 from oscp.json_models import (create_header_parser, add_models_to_namespace,
                               ForecastedBlock, AdjustGroupCapacityForecast,
                               GroupCapacityComplianceError, UpdateGroupMeasurements,
-                              Measurements)
+                              EnergyMeasurement)
 
 # a namespace is a group of api routes which have the same prefix
 # (i think mostly all are in the same namespace in oscp)
 cap_provider_ns = Namespace(name="cp", validate=True, path="/cp/2.0")
 
 models = [ForecastedBlock, AdjustGroupCapacityForecast, UpdateGroupMeasurements,
-          GroupCapacityComplianceError, Measurements]
+          GroupCapacityComplianceError, EnergyMeasurement]
 
 add_models_to_namespace(cap_provider_ns, models)
 header_parser = create_header_parser(cap_provider_ns)

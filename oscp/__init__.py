@@ -14,9 +14,11 @@ from flask_restx import Api
 from oscp.fp_endpoints import flex_provider_ns
 from oscp.cp_endpoints import cap_provider_ns
 from oscp.co_endpoints import cap_optimizer_ns
+#from oscp.ep_endpoints import energy_provider_ns
+from pyoscp.oscp.ep_endpoints import energy_provider_ns
 
 
-def createBlueprint(injected_objects, actors=['fp', 'cp', 'co']):
+def createBlueprint(injected_objects, actors=['fp', 'cp', 'co', 'ep']):
     """
     Creates API blueprint with injected Objects.
     Must contain a forecastmanager and others...
@@ -62,5 +64,8 @@ def createBlueprint(injected_objects, actors=['fp', 'cp', 'co']):
 
     if 'co' in actors:
         api.add_namespace(cap_optimizer_ns)
+
+    if 'ep' in actors:
+        api.add_namespace(energy_provider_ns)
 
     return blueprint

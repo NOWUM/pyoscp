@@ -12,7 +12,7 @@ from flask_restx import fields, Model
 
 energy_measurement_unit = ['WH', 'KWH']
 instantaneous_measurement_unit = ['A', 'W', 'KW', 'WH', 'KWH']
-forecasted_block_unit = ['A', 'W', 'KW', 'WH', 'KWH']
+forecasted_block_unit = ['A', 'W', 'KW', 'WH', 'KWH', '€']
 energy_flow_direction = ['NET', 'IMPORT', 'EXPORT']
 energy_type = ['FLEXIBLE', 'NONFLEXIBLE', 'TOTAL']
 measurement_configuration = ['CONTINUOUS', 'INTERMITTENT']
@@ -69,28 +69,24 @@ ForecastedBlock = Model('ForecastedBlock', {
 
 })
 
-GroupCapacityForecast = Model('UpdateGroupCapacityForecast', {
+UpdateGroupCapacityForecast = Model('UpdateGroupCapacityForecast', {
     'group_id': fields.String(
         description='The id of the area in which the Flexibility Provider has Flexibility Resources connected to the '
                     'grid.'),
-
     'type': fields.String(enum=capacity_forecast_type, description='Identifies the type of forecast.'),
-
     'forecasted_blocks': fields.List(fields.Nested(ForecastedBlock),
                                      description='The technical content of this message. Describes the amound and period of the to be adjusted '
-                                                 'capacity'),
+                                                 'capacity')
 })
 
 AdjustGroupCapacityForecast = Model('AdjustGroupCapacityForecast', {
     'group_id': fields.String(
         description='The id of the area in which the Flexibility Provider has Flexibility Resources connected to the '
                     'grid.'),
-
     'type': fields.String(enum=capacity_forecast_type, description='Identifies the type of forecast.'),
-
     'forecasted_blocks': fields.List(fields.Nested(ForecastedBlock),
                                      description='The technical content of this message. Describes the amount and period of the to be adjusted '
-                                                 'capacity'),
+                                                 'capacity')
 })
 
 GroupCapacityComplianceError = Model('GroupCapacityComplianceError', {
@@ -146,6 +142,12 @@ UpdateAssetMeasurements = Model('UpdateAssetMeasurements', {
     'measurements': fields.Nested(AssetMeasurement, description='Contains the accumulated measurements.')
 })
 
+UpdateGroupPrice = Model('UpdateGroupPrice', {
+    'group_id': fields.String(
+        description='The id of the area where the price is valid?'),
+    'forecasted_blocks': fields.List(fields.Nested(ForecastedBlock),
+                                     description='The technical content of this message. Describes the price for a requested load profile')
+})
 
 # models must be registered at a namespace.
 # If the API is somehow using a given model, you should add it to the array
