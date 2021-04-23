@@ -82,8 +82,8 @@ class RegistrationMan():
 
     def handleHandshakeAck(self, payload: oj.HandshakeAcknowledgement):
         token = self._check_access_token()
-        self.endpoints[token]['new']=False
-        self.endpoints[token]['req_behavior']=payload['required_behaviour']
+        self.endpoints[token]['new'] = False
+        self.endpoints[token]['req_behavior'] = payload['required_behaviour']
         logging.info('handshake_ack received for token '+str(token))
         # TODO set up heartbeat job (somehow use a listener)
         pass
