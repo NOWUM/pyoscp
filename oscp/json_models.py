@@ -66,7 +66,6 @@ ForecastedBlock = Model('ForecastedBlock', {
     'unit': fields.String(enum=forecasted_block_unit, description='Unit of the capacity value.'),
     'start_time': fields.DateTime(),
     'end_time': fields.DateTime(),
-
 })
 
 UpdateGroupCapacityForecast = Model('UpdateGroupCapacityForecast', {
@@ -75,8 +74,8 @@ UpdateGroupCapacityForecast = Model('UpdateGroupCapacityForecast', {
                     'grid.'),
     'type': fields.String(enum=capacity_forecast_type, description='Identifies the type of forecast.'),
     'forecasted_blocks': fields.List(fields.Nested(ForecastedBlock),
-                                     description='The technical content of this message. Describes the amound and period of the to be adjusted '
-                                                 'capacity')
+                                     description='The technical content of this message. Describes the amound and '
+                                                 'period of the to be adjusted capacity')
 })
 
 AdjustGroupCapacityForecast = Model('AdjustGroupCapacityForecast', {
