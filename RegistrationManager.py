@@ -47,7 +47,7 @@ class RegistrationMan():
         base = payload['version_url'][0]['base_url']
         data = {'token': tokenC, 'version_url': self.version_urls}
 
-        if corr_id != None:
+        if corr_id is not None:
             try:
                 response = r.post(base+'/register', json=data,
                                   headers={'Authorization': payload['token'], 'X-Request-ID': '5', 'X-Correlation-ID': req_id})
