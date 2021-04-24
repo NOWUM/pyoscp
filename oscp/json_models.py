@@ -138,7 +138,7 @@ UpdateGroupMeasurements = Model('UpdateGroupMeasurements', {
 
 UpdateAssetMeasurements = Model('UpdateAssetMeasurements', {
     'group_id': fields.String(description='The id of the area which the Flexibility Resources (assets) are part of.'),
-    'measurements': fields.Nested(AssetMeasurement, description='Contains the accumulated measurements.')
+    'measurements': fields.List(fields.Nested(AssetMeasurement, description='Contains the accumulated measurements.'))
 })
 
 UpdateGroupPrice = Model('UpdateGroupPrice', {
