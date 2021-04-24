@@ -28,9 +28,9 @@ RequiredBehaviour = Model('RequiredBehaviour', {
                                                      'in the heartbeat of the receiver, this field can be '
                                                      'omitted.'),
     'measurement_configuration': fields.List(fields.String(enum=measurement_configuration,
-                                               description='For determining how measurements are aggregated. '
-                                                           'Providing multiple configurations is allowed. An empty '
-                                                           'array represents no configurations.'))
+                                                           description='For determining how measurements are aggregated. '
+                                                                       'Providing multiple configurations is allowed. An empty '
+                                                                       'array represents no configurations.'))
 })
 
 VersionUrl = Model('VersionUrl', {
@@ -105,14 +105,15 @@ EnergyMeasurement = Model('EnergyMeasurement', {
     'energy_type': fields.String(enum=energy_type, description='Indicates whether flexible, non-flexible or total '
                                                                'energy is reported. When absent, '
                                                                'TOTAL is assumed.'),
-    'direction': fields.String(enum=energy_flow_direction, description='Indicates the direction the energy has flown into ('
-                                                           'import, export or net).'),
+    'direction': fields.String(enum=energy_flow_direction,
+                               description='Indicates the direction the energy has flown into ('
+                                           'import, export or net).'),
 
     'measure_time': fields.DateTime(description='The moment the actual meter reading took place.'),
     'initial_measure_time': fields.DateTime(description='Optional. The moment the measurement has (re)started '
                                                         '(i.e. the moment an EV charge session starts).'
                                                         'If the other party (recipient) defined a RequiredBehaviour '
-                                                        'with INTERMITTENT as part of the measurement_configuration field, ' 
+                                                        'with INTERMITTENT as part of the measurement_configuration field, '
                                                         'then the initial_measure_time field MUST be set.')
 })
 
@@ -126,9 +127,12 @@ InstantaneousMeasurement = Model('InstantaneousMeasurement', {
 
 AssetMeasurement = Model('AssetMeasurement', {
     'asset_id': fields.String(description='Uniquely identifies the Flexibility Resource.'),
-    'asset_category': fields.String(enum=asset_category, description='Defines the type of Flexibility Resource that is measured.'),
-    'energy_measurement': fields.Nested(EnergyMeasurement, description='Optional. Represents a read out of an accumulative energy meter.'),
-    'instantaneous_measurement': fields.Nested(InstantaneousMeasurement, description='Optional. Represents an instantaneous measuring.')
+    'asset_category': fields.String(enum=asset_category,
+                                    description='Defines the type of Flexibility Resource that is measured.'),
+    'energy_measurement': fields.Nested(EnergyMeasurement,
+                                        description='Optional. Represents a read out of an accumulative energy meter.'),
+    'instantaneous_measurement': fields.Nested(InstantaneousMeasurement,
+                                               description='Optional. Represents an instantaneous measuring.')
 })
 
 UpdateGroupMeasurements = Model('UpdateGroupMeasurements', {
@@ -148,11 +152,13 @@ UpdateGroupPrice = Model('UpdateGroupPrice', {
                                      description='The technical content of this message. Describes the price for a requested load profile')
 })
 
+
 # models must be registered at a namespace.
 # If the API is somehow using a given model, you should add it to the array
 def add_models_to_namespace(namespace, models):
     for model in models:
         namespace.models[model.name] = model
+
 
 def create_header_parser(namespace):
     header_parser = namespace.parser()

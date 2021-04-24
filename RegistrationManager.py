@@ -39,6 +39,7 @@ class RegistrationMan():
         corr_id = request.headers.get("X-Correlation-ID")
         #tokenA = request.headers.get("Authorization")
         # TODO check if tokenA is authenticated, otherwise everybody can register
+        # TODO map group_ids to the registration of tokenA
         logging.info('got register:'+str(payload))
         tokenC = 'Token '+secrets.token_urlsafe(32)
         # <- payload contains information to access client (tokenB)
