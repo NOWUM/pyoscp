@@ -182,6 +182,7 @@ blueprint = createBlueprint(injected_objects)  # , actors=['co'])
 app.register_blueprint(blueprint)
 
 if __name__ == '__main__':
+    regman.start()
     app.run()
 
-    regman.stop_thread = True
+    regman.stop()

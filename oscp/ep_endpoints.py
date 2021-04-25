@@ -1,6 +1,6 @@
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
-from registration import namespace_registration
-from json_models import (create_header_parser, add_models_to_namespace,
+from oscp.registration import namespace_registration
+from oscp.json_models import (create_header_parser, add_models_to_namespace,
                          ForecastedBlock, UpdateGroupCapacityForecast,
                          GroupCapacityComplianceError, UpdateGroupMeasurements,
                          EnergyMeasurement)

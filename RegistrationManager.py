@@ -16,17 +16,21 @@ class RegistrationMan():
         self.group_ids = {}
         self.version_urls = version_urls
         # run background job every 5 seconds
-        self.stop_thread = False
+        self.__stop_thread = False
 
         def bck_job():
             ticker = threading.Event()
             while not ticker.wait(5):
                 self.background_job()
-                if self.stop_thread:
+                if self.__stop_thread:
                     break
 
         self.t = threading.Thread(target=bck_job, daemon=True)
+
+    def start(self):
         self.t.start()
+    def stop(self):
+        self.__stop_thread = True
 
     def _check_access_token(self):
         token = request.headers.get("Authorization")
