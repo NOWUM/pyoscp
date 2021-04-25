@@ -7,7 +7,7 @@ Created on Sun Apr 11 19:19:30 2021
 """
 
 from flask_restx import Resource
-from oscp.json_models import (add_models_to_namespace, create_header_parser,
+from pyoscp.oscp.json_models import (add_models_to_namespace, create_header_parser,
                               Register, Handshake, HandshakeAcknowledgement, Heartbeat, VersionUrl, RequiredBehaviour)
 
 

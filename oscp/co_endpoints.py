@@ -1,7 +1,8 @@
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
-from oscp.json_models import (add_models_to_namespace, create_header_parser,
-                              UpdateGroupCapacityForecast, ForecastedBlock)
-from oscp.registration import namespace_registration
+from pyoscp.oscp.json_models import (add_models_to_namespace, create_header_parser,
+                                     UpdateGroupCapacityForecast, ForecastedBlock)
+from pyoscp.oscp.registration import namespace_registration
+
 # a namespace is a group of api routes which have the same prefix
 # (i think mostly all are in the same namespace in oscp)
 cap_optimizer_ns = Namespace(name="co", validate=True, path="/co/2.0")
@@ -48,7 +49,6 @@ class updateAssetMeasurements(Resource):
     @cap_optimizer_ns.expect(UpdateGroupCapacityForecast)
     @cap_optimizer_ns.marshal_with(UpdateGroupCapacityForecast)
     def post(self):
-
         self.capacityoptimizer.handleUpdateAssetMeasurements(
             cap_optimizer_ns.payload)
         return '', 204
