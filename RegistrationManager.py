@@ -8,7 +8,7 @@ import threading
 from flask import request
 from datetime import datetime, timedelta
 
-
+log = logging.getLogger('oscp')
 class RegistrationMan():
 
     def __init__(self, version_urls: list):
@@ -28,8 +28,10 @@ class RegistrationMan():
         self.t = threading.Thread(target=bck_job, daemon=True)
 
     def start(self):
+        log.warn('backgroundjob started')
         self.t.start()
     def stop(self):
+        log.info('backgroundjob stopped')
         self.__stop_thread = True
 
     def _check_access_token(self):
@@ -46,7 +48,7 @@ class RegistrationMan():
         corr_id = request.headers.get("X-Correlation-ID")
         # tokenA = request.headers.get("Authorization")
         # TODO check if tokenA is authenticated, otherwise everybody can register
-        logging.info('got register:' + str(payload))
+        log.info('got register:' + str(payload))
         tokenC = 'Token ' + secrets.token_urlsafe(32)
         # <- payload contains information to access client (tokenB)
         self.endpoints[tokenC] = {'register': payload}
@@ -67,28 +69,28 @@ class RegistrationMan():
                 if response.status_code >= 205:
                     raise Exception(response.json())
             except Exception as e:
-                logging.error(e)
-                logging.warn(tokenC)
+                log.error(e)
+                log.warn(tokenC)
                 # show token to enter in UI
-        logging.info(self.endpoints)
+        log.info(self.endpoints)
 
     def updateEndpoint(self, payload: oj.Register):
         token = self._check_access_token()
-        logging.info('update endpoint url for:' + str(token))
+        log.info('update endpoint url for:' + str(token))
         if token in self.endpoints.keys():
             self.endpoints[token]['register'] = payload
         # no user feedback specified. Will always return 204..
 
     def unregister(self):
         token = self._check_access_token()
-        logging.info('unregistering ' + str(token) + '. Goodbye')
+        log.info('unregistering ' + str(token) + '. Goodbye')
         self.endpoints.pop(token)
 
     def handleHandshake(self, payload: oj.Handshake):
         token = self._check_access_token()
         self.endpoints[token]['new'] = True
         self.endpoints[token]['req_behavior'] = payload['required_behaviour']
-        logging.info('handshake request for token ' + str(token))
+        log.info('handshake request for token ' + str(token))
 
         # TODO always reply with 403 if not handshaked yet
 
@@ -96,7 +98,7 @@ class RegistrationMan():
         token = self._check_access_token()
         self.endpoints[token]['new'] = False
         self.endpoints[token]['req_behavior'] = payload['required_behaviour']
-        logging.info('handshake_ack received for token ' + str(token))
+        log.info('handshake_ack received for token ' + str(token))
         # TODO set up heartbeat job (somehow use a listener)
         pass
 
@@ -104,7 +106,7 @@ class RegistrationMan():
         token = self._check_access_token()
         self.endpoints[token]['offline_at'] = datetime.strptime(payload['offline_mode_at'], "%Y-%m-%d %H:%M:%S")
         # TODO setup online/offline listener
-        logging.info("got a heartbeat. Will be offline at:" +
+        log.info("got a heartbeat. Will be offline at:" +
                      str(payload['offline_mode_at']))
 
     def _getSupportedVersion(self, version_urls):
@@ -113,7 +115,7 @@ class RegistrationMan():
         return version_urls[0]['base_url']
 
     def background_job(self):
-        # logging.info('background job running')
+        log.info('run backgroundjob')
 
         for endpoint in self.endpoints.values():
             try:
@@ -127,7 +129,7 @@ class RegistrationMan():
                     requests.post(base_url + '/handshake_acknowledgment',
                                   headers={'Authorization': token, 'X-Request-ID': '5'}, json=data)
                     endpoint['new'] = False
-                    logging.info('send ack to ' + str(endpoint))
+                    log.info('send ack to ' + str(endpoint))
 
                 if endpoint.get('req_behavior') != None:
                     nb = endpoint.get('next_heartbeat')
@@ -139,7 +141,7 @@ class RegistrationMan():
                         endpoint['next_heartbeat'] = next_heartbeat
                         token = endpoint['register']['token']
 
-                        logging.info('send heartbeat to ' + base_url)
+                        log.info('send heartbeat to ' + base_url)
                         offline_at = datetime.now() + 3 * timedelta(seconds=interval)
                         data = {'offline_mode_at': offline_at.strftime("%Y-%m-%d %H:%M:%S")}
                         requests.post(base_url + '/heartbeat', headers={'Authorization': token, 'X-Request-ID': '5'},
@@ -147,10 +149,10 @@ class RegistrationMan():
 
                 offline_at = endpoint.get('offline_at')
                 if offline_at != None and offline_at < datetime.now():
-                    logging.info(base_url + ' endpoint is offline. No Heartbeat received before' + offline_at)
+                    log.info(base_url + ' endpoint is offline. No Heartbeat received before' + offline_at)
             except Exception as e:
-                logging.error('Error processing endpoint' + endpoint['token'])
-                logging.error(e)
+                log.error('Error processing endpoint' + endpoint['token'])
+                log.error(e)
 
     def getEndpoint(self, group_id):
         endpoint = None
