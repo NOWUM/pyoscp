@@ -1,3 +1,6 @@
+import logging
+
+import flask
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
 from pyoscp.oscp.registration import namespace_registration
 from pyoscp.oscp.json_models import (create_header_parser, add_models_to_namespace,
@@ -32,8 +35,8 @@ class adjustGroupCapacityForecast(Resource):
         Describe me.
         Please.
         """
-        self.capacityprovider.handleUpdateGroupCapacityForecast(
-            cap_provider_ns.payload)
+        print(f'Headers: {flask.Request.headers}')
+        self.capacityprovider.handleAdjustGroupCapacityForecast(cap_provider_ns.payload)
         return '', 204
 
 

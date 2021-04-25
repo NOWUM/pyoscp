@@ -170,6 +170,32 @@ class CapacityOptimizerManager():
         pass
 
 
+
+
+class FlexibilityManager(object):
+
+    def __init__(self):
+        self.endpoints = []
+
+
+class CapacityProviderManager():
+
+    def __init__(self):
+        self.stuff = []
+
+
+class FlexibilityProviderManager():
+
+    def __init__(self):
+        self.stuff = []
+
+
+class CapacityOptimizerManager():
+
+    def __init__(self):
+        self.stuff = []
+
+
 logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
 
