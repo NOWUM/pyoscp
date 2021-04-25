@@ -1,6 +1,6 @@
 import secrets
 import requests as r
-import oscp.json_models as oj
+import pyoscp.oscp.json_models as oj
 import logging
 from werkzeug.exceptions import Unauthorized, Forbidden
 import requests

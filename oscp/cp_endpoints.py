@@ -73,6 +73,5 @@ class updateGroupMeasurements(Resource):
         Describe me.
         Please.
         """
-        self.capacityprovider.handleUpdateGroupMeasurements(
-            cap_provider_ns.payload)
+        self.capacityprovider.handleUpdateGroupMeasurements(cap_provider_ns.payload)
         return '', 204
