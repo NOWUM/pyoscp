@@ -1,12 +1,7 @@
-#FROM alpine as builder
-#WORKDIR /
-#RUN apk add git
-#RUN git clone https://github.com/mobilityhouse/ocpp.git
-
 FROM python:3.8-slim
-#COPY requirements.txt ./
-RUN pip install --no-cache-dir flask-restx gunicorn requests packaging
 WORKDIR /app
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app
 RUN pip install /app
 RUN rm -r ./oscp
