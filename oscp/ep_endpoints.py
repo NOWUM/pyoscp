@@ -21,9 +21,9 @@ namespace_registration(energy_provider_ns)
 @energy_provider_ns.expect(header_parser)  # validate=True
 @energy_provider_ns.response(204, 'No Content!!!')
 @energy_provider_ns.response(404, 'Not found!')
-class adjustGroupCapacityForecast(Resource):
+class updateGroupCapacityForecast(Resource):
     def __init__(self, api=None, *args, **kwargs):
-        self.capacityprovider = kwargs['energyprovider']
+        self.energyprovider = kwargs['energyprovider']
         super().__init__(api, *args, **kwargs)
 
     @energy_provider_ns.expect(UpdateGroupCapacityForecast)
@@ -32,6 +32,6 @@ class adjustGroupCapacityForecast(Resource):
         Describe me.
         Please.
         """
-        self.capacityprovider.handleUpdateGroupCapacityForecast(
+        self.energyprovider.handleUpdateGroupCapacityForecast(
             energy_provider_ns.payload)
         return '', 204

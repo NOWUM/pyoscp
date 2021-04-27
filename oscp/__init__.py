@@ -51,7 +51,7 @@ def createBlueprint(injected_objects, actors=['fp', 'cp', 'co', 'ep']):
 
     # inject objects through class kwargs
     # (small hack, must be done for new namespaces too)
-    for ns in [flex_provider_ns, cap_provider_ns, cap_optimizer_ns]:
+    for ns in [flex_provider_ns, cap_provider_ns, cap_optimizer_ns, energy_provider_ns]:
         for res in ns.resources:
             res.kwargs['resource_class_kwargs'] = injected_objects
 

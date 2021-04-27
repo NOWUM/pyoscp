@@ -125,6 +125,29 @@ class CapacityProviderManager():
     def handleUpdateGroupMeasurements(self, payload):
         pass
 
+class EnergyProviderManager():
+
+    def __init__(self):
+        self.stuff = []
+
+    def handleAdjustGroupCapacityForecast(self, value):
+        pass
+
+    def handleGroupCapacityComplianceError(self, value):
+        pass
+
+    def handleUpdateGroupMeasurements(self, payload):
+        pass
+
+    def handleUpdateGroupCapacity(self, payload):
+        pass
+
+    def handleAdjustGroupCapacity(self, payload):
+        pass
+
+    def handleUpdateGroupPrice(self, payload):
+        pass
+
 
 class FlexibilityProviderManager():
 
@@ -162,6 +185,7 @@ cpm = CapacityProviderManager()
 com = CapacityOptimizerManager()
 fpm = FlexibilityProviderManager()
 epm = FlexibilityManager()
+elm = EnergyProviderManager()
 
 HOST_URL = 'http://localhost:5000'
 version_urls = [{'version': '2.0', 'base_url': HOST_URL + '/oscp/fp/2.0'}]
@@ -171,7 +195,8 @@ injected_objects = {'endpointmanager': epm,
                     'flexibilityprovider': fpm,
                     'capacityprovider': cpm,
                     'capacityoptimizer': com,
-                    'registrationmanager': regman}
+                    'registrationmanager': regman,
+                    'energyprovider': elm}
 
 # the injected_objects are used to route requests from the namespace to the
 # logic containing classes like ForecastManager
