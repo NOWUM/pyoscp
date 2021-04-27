@@ -60,11 +60,12 @@ class RegistrationMan():
         base = payload['version_url'][0]['base_url']
         data = {'token': tokenC, 'version_url': self.version_urls}
 
-        if corr_id is not None:
+        if corr_id is None:
             try:
                 response = r.post(base + '/register', json=data,
                                   headers={'Authorization': payload['token'], 'X-Request-ID': '5',
                                            'X-Correlation-ID': req_id})
+                log.debug(f"send register to {base + '/register'} with auth: {payload['token']}")
                 # TODO request-ID
                 if response.status_code >= 205:
                     raise Exception(response.json())
@@ -126,8 +127,9 @@ class RegistrationMan():
                     token = endpoint['register']['token']
 
                     data = {}  # not interested in heartbeats
-                    requests.post(base_url + '/handshake_acknowledgment',
+                    res = requests.post(base_url + '/handshake_acknowledgment',
                                   headers={'Authorization': token, 'X-Request-ID': '5'}, json=data)
+                    log.debug(str(res))
                     endpoint['new'] = False
                     log.info('send ack to ' + str(endpoint))
 
@@ -141,17 +143,17 @@ class RegistrationMan():
                         endpoint['next_heartbeat'] = next_heartbeat
                         token = endpoint['register']['token']
 
-                        log.info('send heartbeat to ' + base_url)
+                        log.info('send heartbeat to ' + base_url+ ' auth: '+token)
                         offline_at = datetime.now() + 3 * timedelta(seconds=interval)
                         data = {'offline_mode_at': offline_at.strftime("%Y-%m-%d %H:%M:%S")}
-                        requests.post(base_url + '/heartbeat', headers={'Authorization': token, 'X-Request-ID': '5'},
+                        res = requests.post(base_url + '/heartbeat', headers={'Authorization': token, 'X-Request-ID': '5'},
                                       json=data)
+                        log.info('heartbeat returned: '+str(res.status_code))
 
                 offline_at = endpoint.get('offline_at')
                 if offline_at != None and offline_at < datetime.now():
                     log.info(base_url + ' endpoint is offline. No Heartbeat received before' + offline_at)
             except Exception as e:
-                log.error('Error processing endpoint' + endpoint['token'])
                 log.error(e)
 
     def getEndpoint(self, group_id):
