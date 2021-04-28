@@ -11,7 +11,7 @@ from oscp import createBlueprint
 from packaging import version
 from flask import Flask, redirect
 from RegistrationManager import RegistrationMan
-
+import os
 
 class Endpoint(object):
 
@@ -187,7 +187,7 @@ fpm = FlexibilityProviderManager()
 epm = FlexibilityManager()
 elm = EnergyProviderManager()
 
-HOST_URL = 'http://localhost:5000'
+HOST_URL = os.getenv('HOST_URL','http://localhost:5000')
 version_urls = [{'version': '2.0', 'base_url': HOST_URL + '/oscp/fp/2.0'}]
 regman = RegistrationMan(version_urls)
 injected_objects = {'endpointmanager': epm,
