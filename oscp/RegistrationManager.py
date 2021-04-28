@@ -1,14 +1,29 @@
 import secrets
 import requests as r
-import pyoscp.oscp.json_models as oj
+import oscp.json_models as oj
 import logging
 from werkzeug.exceptions import Unauthorized, Forbidden
 import requests
 import threading
 from flask import request
 from datetime import datetime, timedelta
+from packaging import version
 
 log = logging.getLogger('oscp')
+
+
+# always communicate with latest version available
+def _getLatestVersion(version_urls):
+    latest = version.parse(version_urls[0]['version'])
+    baseUrl = version_urls[0]['base_url']
+    for v in version_urls:
+        cur = version.parse(v['version'])
+        if cur > latest:
+            baseUrl = v['base_url']
+            latest = cur
+    return str(latest), baseUrl
+
+
 class RegistrationMan():
 
     def __init__(self, version_urls: list):

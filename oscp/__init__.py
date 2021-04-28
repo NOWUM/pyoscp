@@ -11,11 +11,11 @@ from flask import Blueprint
 from flask_restx import Api
 
 # from oscp.forecasts import forecast_ns
-from pyoscp.oscp.fp_endpoints import flex_provider_ns
-from pyoscp.oscp.cp_endpoints import cap_provider_ns
-from pyoscp.oscp.co_endpoints import cap_optimizer_ns
+from oscp.fp_endpoints import flex_provider_ns
+from oscp.cp_endpoints import cap_provider_ns
+from oscp.co_endpoints import cap_optimizer_ns
 #from oscp.ep_endpoints import energy_provider_ns
-from pyoscp.oscp.ep_endpoints import energy_provider_ns
+from oscp.ep_endpoints import energy_provider_ns
 
 
 def createBlueprint(injected_objects, actors=['fp', 'cp', 'co', 'ep']):

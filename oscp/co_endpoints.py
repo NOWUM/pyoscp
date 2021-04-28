@@ -1,7 +1,7 @@
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
-from pyoscp.oscp.json_models import (add_models_to_namespace, create_header_parser,
+from oscp.json_models import (add_models_to_namespace, create_header_parser,
                                      UpdateGroupCapacityForecast, ForecastedBlock)
-from pyoscp.oscp.registration import namespace_registration
+from oscp.registration import namespace_registration
 
 # a namespace is a group of api routes which have the same prefix
 # (i think mostly all are in the same namespace in oscp)
