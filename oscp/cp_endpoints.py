@@ -32,8 +32,13 @@ class adjustGroupCapacityForecast(Resource):
     @cap_provider_ns.expect(AdjustGroupCapacityForecast)
     def post(self):
         """
-        Describe me.
-        Please.
+        Demands do not match the capacity limits
+
+        In case the demands of a Flexibility Provider do not match the capacity limits set by the Capacity Provider,
+        it is possible for the Flexibility Provider to request for adjustment of the capacity.
+
+        If the Capacity Provider in fact decides to respond to the request it will report the updated Capacity Forecast
+        within a UpdateGroupCapacityForecast message.
         """
         print(f'Headers: {flask.Request.headers}')
         self.capacityprovider.handleAdjustGroupCapacityForecast(cap_provider_ns.payload)
@@ -51,8 +56,11 @@ class groupCapacityComplianceError(Resource):
     @cap_provider_ns.expect(GroupCapacityComplianceError)
     def post(self):
         """
-        Describe me.
-        Please.
+        FP can not comply to the Capacity Forecast
+
+        This message is for notifying the Capacity Provider the Flexibility Provider cannot comply to the Capacity Forecast within an UpdateGroupCapacityForecast message.
+
+        The Capacity Forecast referred to by the Flexibility Provider SHALL be indicated by the X-Correlation-ID header.
         """
         self.capacityprovider.handleGroupCapacityComplianceError(
             cap_provider_ns.payload)
@@ -70,8 +78,13 @@ class updateGroupMeasurements(Resource):
     @cap_provider_ns.expect(UpdateGroupMeasurements)
     def post(self):
         """
-        Describe me.
-        Please.
+        Updating aggregated group measurements
+
+        This message is for communicating the total usage per aggregated area (group) from Flexibility Provider back to the Capacity Provider.
+
+        This information is necessary for the Capacity Provider to know how much energy each Flexibility Provider has used according to the Capacity Forecast limits sent within the UpdateGroupCapacityForecast message.
+        Furthermore, the information can be used to determine a division of the Capacity Forecast over the different Flexibility Providers.
+        The total usage can be 'nothing'. Therefore, the measurements field can be empty.
         """
         self.capacityprovider.handleUpdateGroupMeasurements(cap_provider_ns.payload)
         return '', 204
