@@ -40,7 +40,7 @@ class adjustGroupCapacityForecast(Resource):
         If the Capacity Provider in fact decides to respond to the request it will report the updated Capacity Forecast
         within a UpdateGroupCapacityForecast message.
         """
-        print(f'Headers: {flask.Request.headers}')
+
         self.capacityprovider.handleAdjustGroupCapacityForecast(cap_provider_ns.payload)
         return '', 204
 
