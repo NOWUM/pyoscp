@@ -41,7 +41,7 @@ class EnergyProviderManager():
     def __init__(self):
         pass
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
 
 
