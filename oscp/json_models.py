@@ -12,7 +12,7 @@ from flask_restx import fields, Model
 
 energy_measurement_unit = ['WH', 'KWH']
 instantaneous_measurement_unit = ['A', 'W', 'KW', 'WH', 'KWH']
-forecasted_block_unit = ['A', 'W', 'KW', 'WH', 'KWH', '€']
+forecasted_block_unit = ['A', 'W', 'KW', 'WH', 'KWH', 'EUR']
 energy_flow_direction = ['NET', 'IMPORT', 'EXPORT']
 energy_type = ['FLEXIBLE', 'NONFLEXIBLE', 'TOTAL']
 measurement_configuration = ['CONTINUOUS', 'INTERMITTENT']

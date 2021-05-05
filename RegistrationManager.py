@@ -70,7 +70,7 @@ class RegistrationMan():
                     raise Exception(response.json())
             except Exception as e:
                 log.error(e)
-                log.warn(tokenC)
+                log.warning(tokenC)
                 # show token to enter in UI
         log.info(self.endpoints)
 
