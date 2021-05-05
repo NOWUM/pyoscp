@@ -13,7 +13,7 @@ from oscp.json_models import (add_models_to_namespace, create_header_parser,
 
 def namespace_registration(namespace):
     add_models_to_namespace(namespace, [
-                            Register, Handshake, HandshakeAcknowledgement, Heartbeat, VersionUrl, RequiredBehaviour])
+        Register, Handshake, HandshakeAcknowledgement, Heartbeat, VersionUrl, RequiredBehaviour])
     header_parser = create_header_parser(namespace)
 
     @namespace.route('/register', doc={"description": "API Endpoint for Registration of participants"})
@@ -66,7 +66,8 @@ def namespace_registration(namespace):
             self.registrationmanager.handleHandshake(namespace.payload)
             return '', 204
 
-    @namespace.route('/handshake_acknowledgment', doc={"description": "API Endpoint for Handshake aknowledgement of participants"})
+    @namespace.route('/handshake_acknowledgment',
+                     doc={"description": "API Endpoint for Handshake aknowledgement of participants"})
     @namespace.expect(header_parser)  # validate=True
     @namespace.response(204, 'No Content')
     class handshake_acknowledgement(Resource):

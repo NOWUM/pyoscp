@@ -4,3 +4,4 @@ data
 .idea
 .idea/
 *.orig
+pyoscp.egg-info
