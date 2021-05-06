@@ -200,8 +200,7 @@ class RegistrationMan():
         return url
 
     def isRegistered(self, token):
-        reged = True
-        if token not in self.endpoints.keys():
-            reged = False
+        reged = bool(self.endpoints.get(token))
+        if not reged:
             log.error('### REQUEST FROM UNREGISTERED PARTICIPANT ###')
         return reged

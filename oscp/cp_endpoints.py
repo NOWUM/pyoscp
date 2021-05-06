@@ -1,12 +1,14 @@
+from werkzeug.exceptions import Unauthorized
+import requests
 import logging
 
 import flask
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
 from oscp.registration import namespace_registration
 from oscp.json_models import (create_header_parser, add_models_to_namespace,
-                                     ForecastedBlock, AdjustGroupCapacityForecast,
-                                     GroupCapacityComplianceError, UpdateGroupMeasurements,
-                                     EnergyMeasurement)
+                              ForecastedBlock, AdjustGroupCapacityForecast,
+                              GroupCapacityComplianceError, UpdateGroupMeasurements,
+                              EnergyMeasurement)
 
 # a namespace is a group of api routes which have the same prefix
 # (i think mostly all are in the same namespace in oscp)
@@ -27,6 +29,7 @@ namespace_registration(cap_provider_ns)
 class adjustGroupCapacityForecast(Resource):
     def __init__(self, api=None, *args, **kwargs):
         self.capacityprovider = kwargs['capacityprovider']
+        self.registrationmanager = kwargs['registrationmanager']
         super().__init__(api, *args, **kwargs)
 
     @cap_provider_ns.expect(AdjustGroupCapacityForecast)
@@ -40,8 +43,10 @@ class adjustGroupCapacityForecast(Resource):
         If the Capacity Provider in fact decides to respond to the request it will report the updated Capacity Forecast
         within a UpdateGroupCapacityForecast message.
         """
-
-        self.capacityprovider.handleAdjustGroupCapacityForecast(cap_provider_ns.payload)
+        if not self.registrationmanager.isRegistered(requests.headers['Authorization']):
+            raise Unauthorized('das darfst du nicht')
+        self.capacityprovider.handleAdjustGroupCapacityForecast(
+            cap_provider_ns.payload)
         return '', 204
 
 
@@ -86,5 +91,6 @@ class updateGroupMeasurements(Resource):
         Furthermore, the information can be used to determine a division of the Capacity Forecast over the different Flexibility Providers.
         The total usage can be 'nothing'. Therefore, the measurements field can be empty.
         """
-        self.capacityprovider.handleUpdateGroupMeasurements(cap_provider_ns.payload)
+        self.capacityprovider.handleUpdateGroupMeasurements(
+            cap_provider_ns.payload)
         return '', 204
