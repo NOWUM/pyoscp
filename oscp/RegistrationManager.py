@@ -28,7 +28,16 @@ class RegistrationMan():
 
     def __init__(self, version_urls: list):
         self.endpoints = {}
-        self.group_ids = {}
+        test_register = {"token": "TESTTOKEN",
+                        "version_url": [
+                            {
+                                "version": "2.0",
+                                "base_url": "http://127.0.0.1:5000/oscp"
+                            }
+                        ]}
+        self.endpoints.update({'TESTTOKEN': {'register': test_register}})
+        self.endpoints['TESTTOKEN'].update({"group_ids": ['TESTGROUIP']})  # and ['group_id1'] from dso1.json
+
         self.version_urls = version_urls
         # run background job every 5 seconds
         self.__stop_thread = False
@@ -45,6 +54,7 @@ class RegistrationMan():
     def start(self):
         log.warning('backgroundjob started')
         self.t.start()
+
     def stop(self):
         log.info('backgroundjob stopped')
         self.__stop_thread = True
@@ -67,10 +77,6 @@ class RegistrationMan():
         tokenC = 'Token ' + secrets.token_urlsafe(32)
         # <- payload contains information to access client (tokenB)
         self.endpoints[tokenC] = {'register': payload}
-        # TODO link group_ids to the registration of tokenA
-        # like: self.endpoints[tokenC]['group_ids'] = ['group_id_0', 'group_id_1']
-        # of better: map tokens to group_ids
-        # like self.group_ids[group_id] = ['tokenC_0', 'tokenC_1']
         # TODO check version use latest version
         base = payload['version_url'][0]['base_url']
         data = {'token': tokenC, 'version_url': self.version_urls}
