@@ -196,3 +196,10 @@ class RegistrationMan():
                   self.endpoints[token]['register']['version_url'][0]['version']
             log.info(f'URL: {url}')
         return url
+
+    def isRegistered(self, token):
+        reged = True
+        if token not in self.endpoints.keys():
+            reged = False
+            log.error('### REQUEST FROM UNREGISTERED PARTICIPANT ###')
+        return reged
