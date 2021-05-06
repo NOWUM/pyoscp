@@ -183,7 +183,7 @@ class RegistrationMan():
             if group_id in v['group_ids']:
                 log.info(f'Found token: {t} for group_id: {group_id}')
                 token = t
-                return token
+        return token
 
     def getURL(self, token=None, group_id=None):
         url = ""
@@ -192,9 +192,11 @@ class RegistrationMan():
         else:
             if group_id and token == None:
                 token = self.getToken(group_id)
+        if token:
             url = self.endpoints[token]['register']['version_url'][0]['base_url'] + '/' + \
                   self.endpoints[token]['register']['version_url'][0]['version']
-            log.info(f'URL: {url}')
+
+        log.info(f'URL: {url}')
         return url
 
     def isRegistered(self, token):
