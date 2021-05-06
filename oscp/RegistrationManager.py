@@ -43,7 +43,7 @@ class RegistrationMan():
         self.t = threading.Thread(target=bck_job, daemon=True)
 
     def start(self):
-        log.warn('backgroundjob started')
+        log.warning('backgroundjob started')
         self.t.start()
     def stop(self):
         log.info('backgroundjob stopped')
