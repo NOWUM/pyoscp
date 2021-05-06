@@ -29,14 +29,14 @@ class RegistrationMan():
     def __init__(self, version_urls: list):
         self.endpoints = {}
         test_register = {"token": "TESTTOKEN",
-                        "version_url": [
-                            {
-                                "version": "2.0",
-                                "base_url": "http://127.0.0.1:5000/oscp"
-                            }
-                        ]}
+                         "version_url": [
+                             {
+                                 "version": "2.0",
+                                 "base_url": "http://127.0.0.1:5000/oscp/cp"
+                             }
+                         ]}
         self.endpoints.update({'TESTTOKEN': {'register': test_register}})
-        self.endpoints['TESTTOKEN'].update({"group_ids": ['TESTGROUIP']})  # and ['group_id1'] from dso1.json
+        self.endpoints['TESTTOKEN'].update({"group_ids": ['TESTGROUPID']})  # and ['group_id1'] from dso1.json
 
         self.version_urls = version_urls
         # run background job every 5 seconds
@@ -177,9 +177,22 @@ class RegistrationMan():
             except Exception as e:
                 log.error(e)
 
-    def getEndpoint(self, group_id):
-        endpoint = None
-        for k, v in self.endpoints.items():
+    def getToken(self, group_id):
+        token = ""
+        for t, v in self.endpoints.items():
             if group_id in v['group_ids']:
-                endpoint = v
-        return endpoint
+                log.info(f'Found token: {t} for group_id: {group_id}')
+                token = t
+                return token
+
+    def getURL(self, token=None, group_id=None):
+        url = ""
+        if token == None and group_id == None:
+            log.error('Either token or group_id must be given.')
+        else:
+            if group_id and token == None:
+                token = self.getToken(group_id)
+            url = self.endpoints[token]['register']['version_url'][0]['base_url'] + '/' + \
+                  self.endpoints[token]['register']['version_url'][0]['version']
+            log.info(f'URL: {url}')
+        return url
