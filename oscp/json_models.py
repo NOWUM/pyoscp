@@ -163,8 +163,6 @@ UpdateGroupLoadForecast = Model('UpdateGroupLoadForecast', {
 })
 
 
-
-
 # models must be registered at a namespace.
 # If the API is somehow using a given model, you should add it to the array
 def add_models_to_namespace(namespace, models):
@@ -174,8 +172,10 @@ def add_models_to_namespace(namespace, models):
 
 def create_header_parser(namespace):
     header_parser = namespace.parser()
-    header_parser.add_argument('Authorization', required=True, location='headers')
-    header_parser.add_argument('X-Request-ID', required=True, location='headers')
+    header_parser.add_argument(
+        'Authorization', required=True, location='headers')
+    header_parser.add_argument(
+        'X-Request-ID', required=True, location='headers')
     header_parser.add_argument('X-Correlation-ID', location='headers')
     header_parser.add_argument('X-Segment-Index', location='headers')
     header_parser.add_argument('X-Segment-Count', location='headers')

@@ -2,7 +2,7 @@ from flask import request
 from oscp.registration import namespace_registration
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
 from oscp.json_models import (create_header_parser, add_models_to_namespace,
-                         UpdateGroupCapacityForecast, ForecastedBlock)
+                              UpdateGroupCapacityForecast, ForecastedBlock)
 
 # a namespace is a group of api routes which have the same prefix
 # (i think mostly all are in the same namespace in oscp)
@@ -31,7 +31,6 @@ class updateGroupCapacityForecast(Resource):
         super().__init__(api, *args, **kwargs)
 
     @flex_provider_ns.expect(UpdateGroupCapacityForecast)
-    @flex_provider_ns.marshal_with(UpdateGroupCapacityForecast)
     # @forecast_ns.response(204, 'No Content')
     def post(self):
         """
@@ -40,5 +39,6 @@ class updateGroupCapacityForecast(Resource):
         """
         if not self.registrationmanager.isRegistered(request.headers['Authorization']):
             raise Unauthorized('Not authorized.')
-        self.flexibilityprovider.handleUpdateGroupCapacityForecast(flex_provider_ns.payload)
+        self.flexibilityprovider.handleUpdateGroupCapacityForecast(
+            flex_provider_ns.payload)
         return '', 204

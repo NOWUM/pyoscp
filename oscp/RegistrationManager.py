@@ -36,7 +36,8 @@ class RegistrationMan():
                              }
                          ]}
         self.endpoints.update({'TESTTOKEN': {'register': test_register}})
-        self.endpoints['TESTTOKEN'].update({"group_ids": ['TESTGROUPID']})  # and ['group_id1'] from dso1.json
+        # and ['group_id1'] from dso1.json
+        self.endpoints['TESTTOKEN'].update({"group_ids": ['TESTGROUPID']})
 
         self.version_urls = version_urls
         # run background job every 5 seconds
@@ -86,7 +87,8 @@ class RegistrationMan():
                 response = r.post(base + '/register', json=data,
                                   headers={'Authorization': payload['token'], 'X-Request-ID': '5',
                                            'X-Correlation-ID': req_id})
-                log.debug(f"send register to {base + '/register'} with auth: {payload['token']}")
+                log.debug(
+                    f"send register to {base + '/register'} with auth: {payload['token']}")
                 # TODO request-ID
                 if response.status_code >= 205:
                     raise Exception(response.json())
@@ -126,10 +128,11 @@ class RegistrationMan():
 
     def handleHeartbeat(self, payload: oj.Heartbeat):
         token = self._check_access_token()
-        self.endpoints[token]['offline_at'] = datetime.strptime(payload['offline_mode_at'], "%Y-%m-%d %H:%M:%S")
+        self.endpoints[token]['offline_at'] = datetime.strptime(
+            payload['offline_mode_at'], "%Y-%m-%d %H:%M:%S")
         # TODO setup online/offline listener
         log.info("got a heartbeat. Will be offline at:" +
-                     str(payload['offline_mode_at']))
+                 str(payload['offline_mode_at']))
 
     def _getSupportedVersion(self, version_urls):
         # TODO check if any client version is supported by us
@@ -141,7 +144,8 @@ class RegistrationMan():
 
         for endpoint in self.endpoints.values():
             try:
-                base_url = self._getSupportedVersion(endpoint['register']['version_url'])
+                base_url = self._getSupportedVersion(
+                    endpoint['register']['version_url'])
                 if endpoint.get('new') == True:
                     # send ack for new handshakes
                     interval = endpoint['req_behavior']['heartbeat_interval']
@@ -149,7 +153,7 @@ class RegistrationMan():
 
                     data = {}  # not interested in heartbeats
                     res = requests.post(base_url + '/handshake_acknowledgment',
-                                  headers={'Authorization': token, 'X-Request-ID': '5'}, json=data)
+                                        headers={'Authorization': token, 'X-Request-ID': '5'}, json=data)
                     log.debug(str(res))
                     endpoint['new'] = False
                     log.info('send ack to ' + str(endpoint))
@@ -164,16 +168,19 @@ class RegistrationMan():
                         endpoint['next_heartbeat'] = next_heartbeat
                         token = endpoint['register']['token']
 
-                        log.info('send heartbeat to ' + base_url+ ' auth: '+token)
+                        log.info('send heartbeat to ' +
+                                 base_url + ' auth: '+token)
                         offline_at = datetime.now() + 3 * timedelta(seconds=interval)
-                        data = {'offline_mode_at': offline_at.strftime("%Y-%m-%d %H:%M:%S")}
+                        data = {'offline_mode_at': offline_at.strftime(
+                            "%Y-%m-%d %H:%M:%S")}
                         res = requests.post(base_url + '/heartbeat', headers={'Authorization': token, 'X-Request-ID': '5'},
-                                      json=data)
+                                            json=data)
                         log.info('heartbeat returned: '+str(res.status_code))
 
                 offline_at = endpoint.get('offline_at')
                 if offline_at != None and offline_at < datetime.now():
-                    log.info(base_url + ' endpoint is offline. No Heartbeat received before' + offline_at)
+                    log.info(
+                        base_url + ' endpoint is offline. No Heartbeat received before' + offline_at)
             except Exception as e:
                 log.error(e)
 
@@ -194,7 +201,7 @@ class RegistrationMan():
                 token = self.getToken(group_id)
         if token:
             url = self.endpoints[token]['register']['version_url'][0]['base_url'] + '/' + \
-                  self.endpoints[token]['register']['version_url'][0]['version']
+                self.endpoints[token]['register']['version_url'][0]['version']
 
         log.info(f'URL: {url}')
         return url
