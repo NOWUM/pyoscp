@@ -1,5 +1,4 @@
 from werkzeug.exceptions import Unauthorized
-import requests
 from flask import request
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
 from oscp.registration import namespace_registration

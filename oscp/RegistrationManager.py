@@ -137,7 +137,7 @@ class RegistrationMan():
         return version_urls[0]['base_url']
 
     def background_job(self):
-        log.info('run backgroundjob')
+        #log.info('run backgroundjob')
 
         for endpoint in self.endpoints.values():
             try:

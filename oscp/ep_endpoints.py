@@ -1,5 +1,6 @@
 from flask import request
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
+from werkzeug.exceptions import Unauthorized
 from oscp.registration import namespace_registration
 from oscp.json_models import (create_header_parser, add_models_to_namespace,
                          ForecastedBlock, UpdateGroupLoadForecast,
@@ -8,7 +9,6 @@ from oscp.json_models import (create_header_parser, add_models_to_namespace,
 
 # a namespace is a group of api routes which have the same prefix
 # (i think mostly all are in the same namespace in oscp)
-from werkzeug.exceptions import Unauthorized
 
 energy_provider_ns = Namespace(name="ep", validate=True, path="/ep/2.0")
 
