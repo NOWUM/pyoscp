@@ -139,7 +139,7 @@ class RegistrationMan(object):
         # compare with self.version_urls
         return version_urls[0]['base_url']
 
-    def __send_heartbeat(self, base_url, interval, token):
+    def _send_heartbeat(self, base_url, interval, token):
         next_heartbeat = datetime.now()+timedelta(seconds=interval)
         log.info('send heartbeat to '+base_url)
         offline_at = datetime.now()+3*timedelta(seconds=interval)
@@ -156,7 +156,7 @@ class RegistrationMan(object):
 
         return next_heartbeat
 
-    def __send_ack(self, base_url, interval, token):
+    def _send_ack(self, base_url, interval, token):
         log.info('send ack for '+str(token))
         # send ack for new handshakes
 
@@ -284,7 +284,7 @@ class RegistrationDictMan(RegistrationMan):
 
                     interval = endpoint['req_behavior']['heartbeat_interval']
                     token = endpoint['register']['token']
-                    self.__send_ack(base_url, interval, token)
+                    self._send_ack(base_url, interval, token)
 
                     endpoint['new'] = False
                     log.debug('send ack to ' + str(endpoint))
@@ -296,7 +296,7 @@ class RegistrationDictMan(RegistrationMan):
 
                         interval = endpoint['req_behavior']['heartbeat_interval']
                         token = endpoint['register']['token']
-                        endpoint['next_heartbeat'] = self.__send_heartbeat(base_url, interval, token)
+                        endpoint['next_heartbeat'] = self._send_heartbeat(base_url, interval, token)
 
                 offline_at = endpoint.get('offline_at')
                 if offline_at != None and offline_at < datetime.now():
