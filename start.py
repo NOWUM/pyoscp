@@ -8,7 +8,7 @@ backend app for capacity provider
 import logging
 from oscp import createBlueprint
 from flask import Flask, redirect
-from oscp.RegistrationManager import RegistrationMan
+from oscp.RegistrationManager import RegistrationDictMan
 import os
 
 
@@ -59,7 +59,7 @@ epm = EnergyProviderManager()
 
 HOST_URL = os.getenv('HOST_URL','http://localhost:5000')
 version_urls = [{'version': '2.0', 'base_url': HOST_URL + '/oscp/fp/2.0'}]
-regman = RegistrationMan(version_urls)
+regman = RegistrationDictMan(version_urls)
 injected_objects = {'energyprovider': epm,
                     'capacityprovider': cpm,
                     'capacityoptimizer': com,
