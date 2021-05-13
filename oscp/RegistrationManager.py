@@ -67,11 +67,10 @@ class RegistrationMan(object):
         log.info('got register:' + str(payload))
         client_token = payload['token']
         # - payload contains information to access client (tokenB)
-
+        base, version = self._getSupportedVersion(
+            payload['version_url'])
         self._updateService(
-            token, client_token, payload['version_url'])
-        # TODO check version use latest version
-        base = payload['version_url'][0]['base_url']
+            token, client_token, base, version)
 
         if corr_id is None:
             self._removeService(token)
@@ -105,7 +104,7 @@ class RegistrationMan(object):
         version_url, version = self._getSupportedVersion(
             payload['version_url'])
         self._updateService(
-            token, payload['token'], payload['version_url'])
+            token, payload['token'], version_url, version)
         # no user feedback specified. Will always return 204..
 
     def unregister(self):
