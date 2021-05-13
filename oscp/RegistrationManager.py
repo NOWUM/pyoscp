@@ -25,7 +25,7 @@ def _getLatestVersion(version_urls):
 
 class RegistrationMan(object):
     '''
-    Base Registration manager indipendent of persistance technology
+    Base Registration manager independent of persistance technology
     '''
 
     def __init__(self, version_urls: list, background_interval=5):
@@ -222,7 +222,7 @@ class RegistrationMan(object):
     def isRegistered(self, token):
         raise NotImplementedError()
 
-    def _addService(self, token, client_token, client_url):
+    def _addService(self, token, client_token, client_url, version=None):
         raise NotImplementedError()
 
     def _updateService(self, token, client_token=None, client_url=None, version=None):
@@ -255,7 +255,7 @@ class RegistrationDictMan(RegistrationMan):
         self._endpoints = {}
         super().__init__(version_urls)
 
-    def _addService(self, token, client_token, client_url):
+    def _addService(self, token, client_token, client_url, version=None):
         self._endpoints[token] = {'register':
                                   {'token': client_token,
                                    'version_url': client_url}
@@ -301,8 +301,7 @@ class RegistrationDictMan(RegistrationMan):
     def _background_job(self):
         for endpoint in self._endpoints.values():
             try:
-                base_url = self._getSupportedVersion(
-                    endpoint['register']['version_url'])
+                base_url = endpoint['register']['version_url']
                 if endpoint.get('new') == True:
                     # send ack for new handshakes
 
