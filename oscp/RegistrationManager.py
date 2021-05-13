@@ -1,5 +1,4 @@
 import secrets
-import requests as r
 import oscp.json_models as oj
 import logging
 from werkzeug.exceptions import Unauthorized, Forbidden
@@ -30,16 +29,7 @@ class RegistrationMan(object):
     '''
 
     def __init__(self, version_urls: list, background_interval=5):
-        self._addService('TESTTOKEN', "CLIENT_TESTTOKEN", [{
-            "version": "2.0",
-            "base_url": "http://127.0.0.1:5000/oscp/cp"
-        }])
-
-        self._setGroupIds('TESTTOKEN', ['TESTGROUPID'])
-        # and ['group_id1'] from dso1.json
-
         self.version_urls = version_urls
-        # run background job every 5 seconds
         self.__stop_thread = False
 
         def bck_job():
@@ -70,37 +60,50 @@ class RegistrationMan(object):
 
     def handleRegister(self, payload: oj.Register):
         token = self._check_access_token()
+        # TODO check if tokenA is authenticated, otherwise everybody can register
         req_id = request.headers.get("X-Request-ID")
         corr_id = request.headers.get("X-Correlation-ID")
-        # tokenA = request.headers.get("Authorization")
-        # TODO check if tokenA is authenticated, otherwise everybody can register
+
         log.info('got register:' + str(payload))
-        tokenC = 'Token ' + secrets.token_urlsafe(32)
-        # <- payload contains information to access client (tokenB)
-        self._addService(
-            tokenC, payload['token'], payload['version_url'])
+        client_token = payload['token']
+        # - payload contains information to access client (tokenB)
+
+        self._updateService(
+            token, client_token, payload['version_url'])
         # TODO check version use latest version
         base = payload['version_url'][0]['base_url']
-        data = {'token': tokenC, 'version_url': self.version_urls}
 
         if corr_id is None:
+            self._removeService(token)
+            # remove tokenA, send new tokenC to enduser
+            tokenC = 'Token ' + secrets.token_urlsafe(32)
+            data = {'token': tokenC, 'version_url': self.version_urls}
+
+            version_url, version = self._getSupportedVersion(
+                payload['version_url'])
+
+            self._addService(  # add version
+                tokenC, payload['token'], version_url, version)
             try:
-                response = r.post(base + '/register', json=data,
-                                  headers={'Authorization': payload['token'], 'X-Request-ID': '5',
-                                           'X-Correlation-ID': req_id})
+                response = requests.post(version_url+'/register', json=data,
+                                         headers={'Authorization': payload['token'],
+                                                  'X-Request-ID': secrets.token_urlsafe(8),
+                                                  'X-Correlation-ID': req_id})
                 log.debug(
                     f"send register to {base + '/register'} with auth: {payload['token']}")
                 # TODO request-ID
                 if response.status_code >= 205:
                     raise Exception(response.json())
-            except Exception as e:
-                log.error(e)
+            except Exception:
+                log.exception("error in register handling")
                 log.warning(tokenC)
                 # show token to enter in UI
 
     def updateEndpoint(self, payload: oj.Register):
         token = self._check_access_token()
         log.info('update endpoint url for:' + str(token))
+        version_url, version = self._getSupportedVersion(
+            payload['version_url'])
         self._updateService(
             token, payload['token'], payload['version_url'])
         # no user feedback specified. Will always return 204..
@@ -121,7 +124,7 @@ class RegistrationMan(object):
     def handleHandshakeAck(self, payload: oj.HandshakeAcknowledgement):
         token = self._check_access_token()
         self._setRequiredBehavior(
-            token, payload['required_behaviour'], new=True)
+            token, payload['required_behaviour'], new=False)
         log.info('handshake_ack received for token ' + str(token))
         # TODO set up heartbeat job (somehow use a listener)
         pass
@@ -137,7 +140,7 @@ class RegistrationMan(object):
     def _getSupportedVersion(self, version_urls):
         # TODO check if any client version is supported by us
         # compare with self.version_urls
-        return version_urls[0]['base_url']
+        return version_urls[0]['base_url'], version_urls[0]['version']
 
     def _send_heartbeat(self, base_url, interval, token):
         next_heartbeat = datetime.now()+timedelta(seconds=interval)
@@ -163,22 +166,45 @@ class RegistrationMan(object):
         data = {}  # not interested in heartbeats
         data = {'required_behaviour': {
             'heartbeat_interval': interval}}
-        requests.post(
-            base_url+'/handshake_acknowledgment',
-            headers={
-                'Authorization': token, 'X-Request-ID': secrets.token_urlsafe(8)},
-            json=data)
+        try:
+            requests.post(
+                base_url+'/handshake_acknowledgment',
+                headers={
+                    'Authorization': token, 'X-Request-ID': secrets.token_urlsafe(8)},
+                json=data)
+        except requests.exceptions.ConnectionError:
+            log.error("connection failed")
+
+    def _send_register(self, base_url, new_token, client_token):
+        try:
+            log.info('send register to '+base_url)
+
+            data = {'token': new_token,
+                    'version_url': self.version_urls}
+
+            requests.post(
+                base_url+'/register',
+                headers={'Authorization': client_token,
+                         'X-Request-ID': secrets.token_urlsafe(8)},
+                json=data)
+        except ConnectionError:
+            log.error("connection failed")
+        except Exception as e:
+            log.exception(e)
 
     def _background_job(self):
         log.debug('run backgroundjob')
 
         # for all endpoints
-            # if endpoint has handshaked -> send ack
+        # if endpoint has handshaked
+        #     self._send_ack(base_url, interval, token)
+        # if endpoint heartbeat is due -> send heartbeat
+        #     self._send_heartbeat(base_url, interval, token)
 
-            # if endpoint heartbeat is due -> send heartbeat
+        # if time since last heartbeat is long ago -> set offline
 
-            # if time since last heartbeat is long ago -> set offline
-
+        # send register for new tokens (whatever new means)
+        #     self._send_register(base_url, new_token, client_token)
 
     def getURL(self, token=None, group_id=None):
         url = ""
@@ -199,7 +225,7 @@ class RegistrationMan(object):
     def _addService(self, token, client_token, client_url):
         raise NotImplementedError()
 
-    def _updateService(self, token, client_token=None, client_url=None):
+    def _updateService(self, token, client_token=None, client_url=None, version=None):
         raise NotImplementedError()
 
     def _setGroupIds(self, token, group_ids):
@@ -224,17 +250,16 @@ class RegistrationMan(object):
         raise NotImplementedError()
 
 
-
 class RegistrationDictMan(RegistrationMan):
-    def __init__(self,version_urls):
+    def __init__(self, version_urls):
         self._endpoints = {}
         super().__init__(version_urls)
 
     def _addService(self, token, client_token, client_url):
         self._endpoints[token] = {'register':
-                                 {'token': client_token,
-                                  'version_url': client_url}
-                                 }
+                                  {'token': client_token,
+                                   'version_url': client_url}
+                                  }
         log.debug(self._endpoints)
 
     def _updateService(self, token, client_token=None, client_url=None):
@@ -262,7 +287,7 @@ class RegistrationDictMan(RegistrationMan):
         self._endpoints[token]['offline_at'] = offline_at
 
     def _token_by_group_id(self, group_id):
-        token = ""
+        token = None
         for t, v in self._endpoints.items():
             if group_id in v['group_ids']:
                 log.info(f'Found token: {t} for group_id: {group_id}')
@@ -272,7 +297,6 @@ class RegistrationDictMan(RegistrationMan):
     def _url_by_token(self, token):
         return self._endpoints[token]['register']['version_url'][0]['base_url'] + '/' + \
             self._endpoints[token]['register']['version_url'][0]['version']
-
 
     def _background_job(self):
         for endpoint in self._endpoints.values():
@@ -296,7 +320,8 @@ class RegistrationDictMan(RegistrationMan):
 
                         interval = endpoint['req_behavior']['heartbeat_interval']
                         token = endpoint['register']['token']
-                        endpoint['next_heartbeat'] = self._send_heartbeat(base_url, interval, token)
+                        endpoint['next_heartbeat'] = self._send_heartbeat(
+                            base_url, interval, token)
 
                 offline_at = endpoint.get('offline_at')
                 if offline_at != None and offline_at < datetime.now():
