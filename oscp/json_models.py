@@ -12,6 +12,7 @@ from flask_restx import fields, Model
 
 energy_measurement_unit = ['WH', 'KWH']
 instantaneous_measurement_unit = ['A', 'W', 'KW', 'WH', 'KWH']
+# currency is not part of OSCP
 forecasted_block_unit = ['A', 'W', 'KW', 'WH', 'KWH', 'EUR', 'EUR/KWH']
 energy_flow_direction = ['NET', 'IMPORT', 'EXPORT']
 energy_type = ['FLEXIBLE', 'NONFLEXIBLE', 'TOTAL']

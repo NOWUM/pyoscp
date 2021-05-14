@@ -261,7 +261,7 @@ class RegistrationDictMan(RegistrationMan):
                                   }
         log.debug(self._endpoints)
 
-    def _updateService(self, token, client_token=None, client_url=None):
+    def _updateService(self, token, client_token=None, client_url=None, version=None):
         data = {'register':
                 {'token': client_token,
                  'version_url': client_url}
@@ -272,9 +272,9 @@ class RegistrationDictMan(RegistrationMan):
     def _setGroupIds(self, token, group_ids):
         self._endpoints[token].update({"group_ids": group_ids})
 
-    def _setRequiredBehavior(self, token, req_behavior, new=True):
+    def _setRequiredBehavior(self, token, required_behavior, new=True):
         self._endpoints[token]['new'] = new
-        self._endpoints[token]['required_behavior'] = req_behavior
+        self._endpoints[token]['required_behavior'] = required_behavior
 
     def _removeService(self, token):
         self._endpoints.pop(token)
@@ -298,25 +298,26 @@ class RegistrationDictMan(RegistrationMan):
             self._endpoints[token]['register']['version_url'][0]['version']
 
     def _background_job(self):
+        log.info(self._endpoints)
         for endpoint in self._endpoints.values():
             try:
                 base_url = endpoint['register']['version_url']
                 if endpoint.get('new') == True:
                     # send ack for new handshakes
 
-                    interval = endpoint['req_behavior']['heartbeat_interval']
+                    interval = endpoint['required_behavior']['heartbeat_interval']
                     token = endpoint['register']['token']
                     self._send_ack(base_url, interval, token)
 
                     endpoint['new'] = False
                     log.debug('send ack to ' + str(endpoint))
 
-                if endpoint.get('req_behavior') != None:
+                if endpoint.get('required_behavior') != None:
                     nb = endpoint.get('next_heartbeat')
                     if nb is None or (nb < datetime.now()):
                         # next heartbeat is due, send it
 
-                        interval = endpoint['req_behavior']['heartbeat_interval']
+                        interval = endpoint['required_behavior']['heartbeat_interval']
                         token = endpoint['register']['token']
                         endpoint['next_heartbeat'] = self._send_heartbeat(
                             base_url, interval, token)

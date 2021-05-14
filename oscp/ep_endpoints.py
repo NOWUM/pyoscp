@@ -22,8 +22,8 @@ namespace_registration(energy_provider_ns)
 
 @energy_provider_ns.route('/update_group_load_forecast', doc={"description": "API Endpoint for load profile?"})
 @energy_provider_ns.expect(header_parser)  # validate=True
-@energy_provider_ns.response(204, 'No Content!!!')
-@energy_provider_ns.response(404, 'Not found!')
+@energy_provider_ns.response(204, 'No Content')
+@energy_provider_ns.response(404, 'Not found')
 class updateGroupLoadForecast(Resource):
     def __init__(self, api=None, *args, **kwargs):
         self.energyprovider = kwargs['energyprovider']
