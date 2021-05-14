@@ -1,7 +1,7 @@
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
 from flask import request
 from oscp.json_models import (add_models_to_namespace, create_header_parser,
-                                     UpdateGroupCapacityForecast, ForecastedBlock)
+                              UpdateGroupCapacityForecast, ForecastedBlock)
 from oscp.registration import namespace_registration
 
 # a namespace is a group of api routes which have the same prefix
@@ -28,7 +28,6 @@ class updateGroupCapacityForecast(Resource):
         super().__init__(api, *args, **kwargs)
 
     @cap_optimizer_ns.expect(UpdateGroupCapacityForecast)
-    @cap_optimizer_ns.marshal_with(UpdateGroupCapacityForecast)
     # @forecast_ns.response(204, 'No Content')
     def post(self):
         """
@@ -52,9 +51,9 @@ class updateAssetMeasurements(Resource):
         super().__init__(api, *args, **kwargs)
 
     @cap_optimizer_ns.expect(UpdateGroupCapacityForecast)
-    @cap_optimizer_ns.marshal_with(UpdateGroupCapacityForecast)
     def post(self):
         if not self.registrationmanager.isRegistered(request.headers['Authorization']):
             raise Unauthorized('Not authorized.')
-        self.capacityoptimizer.handleUpdateAssetMeasurements(cap_optimizer_ns.payload)
+        self.capacityoptimizer.handleUpdateAssetMeasurements(
+            cap_optimizer_ns.payload)
         return '', 204

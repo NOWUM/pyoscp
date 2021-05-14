@@ -12,6 +12,7 @@ from flask_restx import fields, Model
 
 energy_measurement_unit = ['WH', 'KWH']
 instantaneous_measurement_unit = ['A', 'W', 'KW', 'WH', 'KWH']
+# currency is not part of OSCP
 forecasted_block_unit = ['A', 'W', 'KW', 'WH', 'KWH', 'EUR', 'EUR/KWH']
 energy_flow_direction = ['NET', 'IMPORT', 'EXPORT']
 energy_type = ['FLEXIBLE', 'NONFLEXIBLE', 'TOTAL']
@@ -163,8 +164,6 @@ UpdateGroupLoadForecast = Model('UpdateGroupLoadForecast', {
 })
 
 
-
-
 # models must be registered at a namespace.
 # If the API is somehow using a given model, you should add it to the array
 def add_models_to_namespace(namespace, models):
@@ -174,8 +173,10 @@ def add_models_to_namespace(namespace, models):
 
 def create_header_parser(namespace):
     header_parser = namespace.parser()
-    header_parser.add_argument('Authorization', required=True, location='headers')
-    header_parser.add_argument('X-Request-ID', required=True, location='headers')
+    header_parser.add_argument(
+        'Authorization', required=True, location='headers')
+    header_parser.add_argument(
+        'X-Request-ID', required=True, location='headers')
     header_parser.add_argument('X-Correlation-ID', location='headers')
     header_parser.add_argument('X-Segment-Index', location='headers')
     header_parser.add_argument('X-Segment-Count', location='headers')

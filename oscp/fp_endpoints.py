@@ -1,5 +1,4 @@
 from flask import request
-from werkzeug.exceptions import Unauthorized
 from oscp.registration import namespace_registration
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
 from oscp.json_models import (create_header_parser, add_models_to_namespace,
@@ -7,6 +6,7 @@ from oscp.json_models import (create_header_parser, add_models_to_namespace,
 
 # a namespace is a group of api routes which have the same prefix
 # (i think mostly all are in the same namespace in oscp)
+from werkzeug.exceptions import Unauthorized
 
 flex_provider_ns = Namespace(name="fp", validate=True, path="/fp/2.0")
 

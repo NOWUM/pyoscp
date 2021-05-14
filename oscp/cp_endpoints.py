@@ -42,7 +42,8 @@ class adjustGroupCapacityForecast(Resource):
         """
         if not self.registrationmanager.isRegistered(request.headers['Authorization']):
             raise Unauthorized('Not authorized.')
-        self.capacityprovider.handleAdjustGroupCapacityForecast(cap_provider_ns.payload)
+        self.capacityprovider.handleAdjustGroupCapacityForecast(
+            cap_provider_ns.payload)
         return '', 204
 
 
@@ -66,7 +67,8 @@ class groupCapacityComplianceError(Resource):
         """
         if not self.registrationmanager.isRegistered(request.headers['Authorization']):
             raise Unauthorized('Not authorized.')
-        self.capacityprovider.handleGroupCapacityComplianceError(cap_provider_ns.payload)
+        self.capacityprovider.handleGroupCapacityComplianceError(
+            cap_provider_ns.payload)
         return '', 204
 
 
@@ -92,5 +94,6 @@ class updateGroupMeasurements(Resource):
         """
         if not self.registrationmanager.isRegistered(request.headers['Authorization']):
             raise Unauthorized('Not authorized.')
-        self.capacityprovider.handleUpdateGroupMeasurements(cap_provider_ns.payload)
+        self.capacityprovider.handleUpdateGroupMeasurements(
+            cap_provider_ns.payload)
         return '', 204
