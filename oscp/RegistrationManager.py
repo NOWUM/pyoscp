@@ -299,7 +299,7 @@ class RegistrationDictMan(RegistrationMan):
             self._endpoints[token]['register']['version_url'][0]['version']
 
     def _background_job(self):
-        log.info(self._endpoints)
+        #log.debug(self._endpoints)
         for endpoint in self._endpoints.values():
             try:
                 base_url = endpoint['register']['version_url']
