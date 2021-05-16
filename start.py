@@ -41,6 +41,7 @@ class EnergyProviderManager():
     def __init__(self):
         pass
 
+
 logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
 
@@ -57,7 +58,7 @@ com = CapacityOptimizerManager()
 fpm = FlexibilityProviderManager()
 epm = EnergyProviderManager()
 
-HOST_URL = os.getenv('HOST_URL','http://localhost:5000')
+HOST_URL = os.getenv('HOST_URL', 'http://localhost:5000')
 version_urls = [{'version': '2.0', 'base_url': HOST_URL + '/oscp/fp/2.0'}]
 regman = RegistrationDictMan(version_urls)
 injected_objects = {'energyprovider': epm,

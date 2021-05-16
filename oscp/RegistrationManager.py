@@ -1,5 +1,4 @@
 import secrets
-import requests as r
 import oscp.json_models as oj
 import logging
 from werkzeug.exceptions import Unauthorized, Forbidden
@@ -170,7 +169,8 @@ class RegistrationMan(object):
             requests.post(
                 base_url+'/handshake_acknowledgment',
                 headers={
-                    'Authorization': token, 'X-Request-ID': secrets.token_urlsafe(8)},
+                    'Authorization': token,
+                    'X-Request-ID': secrets.token_urlsafe(8)},
                 json=data)
         except requests.exceptions.ConnectionError:
             log.error("connection failed")
@@ -299,7 +299,7 @@ class RegistrationDictMan(RegistrationMan):
             self._endpoints[token]['register']['version_url'][0]['version']
 
     def _background_job(self):
-        #log.debug(self._endpoints)
+        # log.debug(self._endpoints)
         for endpoint in self._endpoints.values():
             try:
                 base_url = endpoint['register']['version_url']
