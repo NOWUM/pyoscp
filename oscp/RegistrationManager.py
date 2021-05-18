@@ -82,7 +82,7 @@ class RegistrationMan(object):
             version_url, version = self._getSupportedVersion(
                 payload['version_url'])
 
-            self._addService(  # add version
+            self._addService(
                 tokenC, payload['token'], version_url, version)
             try:
                 response = requests.post(version_url+'/register', json=data,
@@ -99,14 +99,14 @@ class RegistrationMan(object):
                 log.exception("error in register handling")
                 log.warning(tokenC)
                 # show token to enter in UI
-        log.info(self.endpoints)
 
     def updateEndpoint(self, payload: oj.Register):
         token = self._check_access_token()
-        log.info('update endpoint url for:' + str(token))
-        if token in self.endpoints.keys():
-            self.endpoints[token]['register'] = payload
-        # no user feedback specified. Will always return 204..
+
+        version_url, version = self._getSupportedVersion(
+                        payload['version_url'])
+        log.info(f'update endpoint url for: {version_url}')
+        self._addService(token, payload['token'], version_url, version)
 
     def unregister(self):
         token = self._check_access_token()
