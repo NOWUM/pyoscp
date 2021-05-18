@@ -86,7 +86,7 @@ class RegistrationMan(object):
                 tokenC, payload['token'], version_url, version)
             try:
                 response = requests.post(version_url+'/register', json=data,
-                                         headers={'Authorization': payload['token'],
+                                         headers={'Authorization': 'Token '+payload['token'],
                                                   'X-Request-ID': secrets.token_urlsafe(8),
                                                   'X-Correlation-ID': req_id})
                 log.debug(
@@ -150,7 +150,7 @@ class RegistrationMan(object):
         try:
             requests.post(
                 base_url+'/heartbeat',
-                headers={'Authorization': token,
+                headers={'Authorization': 'Token '+token,
                          'X-Request-ID': secrets.token_urlsafe(8)},
                 json=data)
         except:
@@ -169,7 +169,7 @@ class RegistrationMan(object):
             requests.post(
                 base_url+'/handshake_acknowledgment',
                 headers={
-                    'Authorization': token,
+                    'Authorization': 'Token '+token,
                     'X-Request-ID': secrets.token_urlsafe(8)},
                 json=data)
         except requests.exceptions.ConnectionError:
@@ -184,7 +184,7 @@ class RegistrationMan(object):
 
             requests.post(
                 base_url+'/register',
-                headers={'Authorization': client_token,
+                headers={'Authorization': 'Token '+client_token,
                          'X-Request-ID': secrets.token_urlsafe(8)},
                 json=data)
         except ConnectionError:
