@@ -51,30 +51,30 @@ class RegistrationMan(object):
         self.__stop_thread = True
 
     def _check_access_token(self):
-        token = request.headers.get("Authorization")
-        if not token:
+        authHeader = request.headers.get("Authorization")
+        if not authHeader:
             raise Unauthorized(description="Unauthorized")
-
+        token= authHeader.replace('Token ', '').strip()
         if not self.isRegistered(token):
             raise Forbidden("invalid token")
         return token
 
     def handleRegister(self, payload: oj.Register):
-        token = self._check_access_token()
-        # TODO check if tokenA is authenticated, otherwise everybody can register
+        tokenA = self._check_access_token()
+        # check if tokenA is authenticated, otherwise everybody can register
         req_id = request.headers.get("X-Request-ID")
         corr_id = request.headers.get("X-Correlation-ID")
 
         log.info('got register:' + str(payload))
-        client_token = payload['token']
+        client_tokenB = payload['token']
         # - payload contains information to access client (tokenB)
         base, version = self._getSupportedVersion(
             payload['version_url'])
         self._updateService(
-            token, client_token, base, version)
+            tokenA, client_tokenB, base, version)
 
         if corr_id is None:
-            self._removeService(token)
+            self._removeService(tokenA)
             # remove tokenA, send new tokenC to enduser
             tokenC = secrets.token_urlsafe(32)
             data = {'token': tokenC, 'version_url': self.version_urls}
@@ -86,14 +86,15 @@ class RegistrationMan(object):
                 tokenC, payload['token'], version_url, version)
             try:
                 response = requests.post(version_url+'/register', json=data,
-                                         headers={'Authorization': 'Token '+payload['token'],
+                                         headers={'Authorization': 'Token '+client_tokenB,
                                                   'X-Request-ID': secrets.token_urlsafe(8),
                                                   'X-Correlation-ID': req_id})
-                log.debug(
-                    f"send register to {base + '/register'} with auth: {payload['token']}")
-                # TODO request-ID
+                log.info(
+                    f"send register to {base + '/register'} with auth: {client_tokenB}")
                 if response.status_code >= 205:
                     raise Exception(response.json())
+            except requests.exceptions.ConnectionError:
+                log.error("connection failed")
             except Exception:
                 log.exception("error in register handling")
                 log.warning(tokenC)
@@ -118,15 +119,11 @@ class RegistrationMan(object):
             token, payload['required_behaviour'], new=True)
         log.info('handshake request for token ' + str(token))
 
-        # TODO always reply with 403 if not handshaked yet
-
     def handleHandshakeAck(self, payload: oj.HandshakeAcknowledgement):
         token = self._check_access_token()
         self._setRequiredBehavior(
             token, payload['required_behaviour'], new=False)
         log.info('handshake_ack received for token ' + str(token))
-        # TODO set up heartbeat job (somehow use a listener)
-        pass
 
     def handleHeartbeat(self, payload: oj.Heartbeat):
         token = self._check_access_token()
@@ -148,32 +145,36 @@ class RegistrationMan(object):
         data = {'offline_mode_at': offline_at.strftime(
             "%Y-%m-%d %H:%M:%S")}
         try:
-            requests.post(
+            response = requests.post(
                 base_url+'/heartbeat',
                 headers={'Authorization': 'Token '+token,
                          'X-Request-ID': secrets.token_urlsafe(8)},
                 json=data)
+            if response.status_code >= 205:
+                raise Exception(response.text)
         except:
             log.debug('sent heartbeat failed: '+base_url)
 
         return next_heartbeat
 
     def _send_ack(self, base_url, interval, token):
-        log.info('send ack for '+str(token))
+        log.info(f'send ack for {base_url}')
         # send ack for new handshakes
 
         data = {}  # not interested in heartbeats
         data = {'required_behaviour': {
             'heartbeat_interval': interval}}
         try:
-            requests.post(
+            response = requests.post(
                 base_url+'/handshake_acknowledgment',
                 headers={
                     'Authorization': 'Token '+token,
                     'X-Request-ID': secrets.token_urlsafe(8)},
                 json=data)
+            if response.status_code >= 205:
+                raise Exception(response.text)
         except requests.exceptions.ConnectionError:
-            log.error("connection failed")
+            log.error(f'Connection failed: {base_url}')
 
     def _send_register(self, base_url, new_token, client_token):
         try:
@@ -182,13 +183,15 @@ class RegistrationMan(object):
             data = {'token': new_token,
                     'version_url': self.version_urls}
 
-            requests.post(
+            response = requests.post(
                 base_url+'/register',
                 headers={'Authorization': 'Token '+client_token,
                          'X-Request-ID': secrets.token_urlsafe(8)},
                 json=data)
-        except ConnectionError:
-            log.error("connection failed")
+            if response.status_code >= 205:
+                raise Exception(response.text)
+        except requests.exceptions.ConnectionError:
+            log.error(f'Connection failed: {base_url}')
         except Exception as e:
             log.exception(e)
 
@@ -311,7 +314,6 @@ class RegistrationDictMan(RegistrationMan):
                     self._send_ack(base_url, interval, token)
 
                     endpoint['new'] = False
-                    log.debug('send ack to ' + str(endpoint))
 
                 if endpoint.get('required_behavior') != None:
                     nb = endpoint.get('next_heartbeat')
