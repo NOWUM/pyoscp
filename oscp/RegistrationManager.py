@@ -76,7 +76,7 @@ class RegistrationMan(object):
         if corr_id is None:
             self._removeService(token)
             # remove tokenA, send new tokenC to enduser
-            tokenC = 'Token ' + secrets.token_urlsafe(32)
+            tokenC = secrets.token_urlsafe(32)
             data = {'token': tokenC, 'version_url': self.version_urls}
 
             version_url, version = self._getSupportedVersion(

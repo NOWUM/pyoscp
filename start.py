@@ -6,10 +6,14 @@ Created on Sun Mar 28 18:48:33 2021
 backend app for capacity provider
 """
 import logging
+import os
+import json
 from oscp import createBlueprint
 from flask import Flask, redirect
 from oscp.RegistrationManager import RegistrationDictMan
-import os
+
+logging.basicConfig(level=logging.DEBUG)
+log = logging.getLogger('oscp')
 
 
 class FlexibilityManager(object):
@@ -42,7 +46,6 @@ class EnergyProviderManager():
         pass
 
 
-logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
 
 
@@ -66,6 +69,16 @@ injected_objects = {'energyprovider': epm,
                     'capacityoptimizer': com,
                     'flexibilityprovider': fpm,
                     'registrationmanager': regman}
+
+config = 'oscp.json'
+if os.path.exists(config):
+    log.info(f'reading config file {config}')
+    with open(config, 'r') as f:
+        conf = json.load(f)
+        regman._addService(conf['token'], None, None)
+else:
+    log.info(f'config file {config} does not exist')
+
 
 # the injected_objects are used to route requests from the namespace to the
 # logic containing classes like ForecastManager
