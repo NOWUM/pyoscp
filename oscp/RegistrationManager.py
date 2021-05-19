@@ -1,3 +1,5 @@
+from dateutil import parser
+import json
 import secrets
 import oscp.json_models as oj
 import logging
@@ -65,7 +67,7 @@ class RegistrationMan(object):
         authHeader = request.headers.get("Authorization")
         if not authHeader:
             raise Unauthorized(description="Unauthorized")
-        token= authHeader.replace('Token ', '').strip()
+        token = authHeader.replace('Token ', '').strip()
         if not self.isRegistered(token):
             raise Forbidden("invalid token")
         return token
@@ -115,7 +117,7 @@ class RegistrationMan(object):
         token = self._check_access_token()
 
         version_url, version = self._getSupportedVersion(
-                        payload['version_url'])
+            payload['version_url'])
         log.info(f'update endpoint url for: {version_url}')
         self._addService(token, payload['token'], version_url, version)
 
@@ -164,7 +166,7 @@ class RegistrationMan(object):
             if response.status_code >= 205:
                 raise Exception(response.text)
         except:
-            log.debug('sent heartbeat failed: '+base_url)
+            log.info('sent heartbeat failed: '+base_url)
 
         return next_heartbeat
 
@@ -264,57 +266,92 @@ class RegistrationMan(object):
         raise NotImplementedError()
 
 
+def StoD(string: str):
+    return parser.parse(string)
+
+
+def DtoS(date):
+    return date.isoformat()
+
+
 class RegistrationDictMan(RegistrationMan):
-    def __init__(self, version_urls):
-        self._endpoints = {}
+    def __init__(self, version_urls, filename='endpoints.json'):
+        self.filename = filename
+
+        self.writeJson({})
         super().__init__(version_urls)
 
+    def readJson(self):
+        with open(self.filename, 'r') as f:
+            return json.load(f)
+
+    def writeJson(self, endpoints):
+        with open(self.filename, 'w') as f:
+            json.dump(endpoints, f, indent=4, sort_keys=False)
+
     def _addService(self, token, client_token, client_url, version=None):
-        self._endpoints[token] = {'register':
-                                  {'token': client_token,
-                                   'version_url': client_url}
-                                  }
-        log.debug(self._endpoints)
+        endpoints = self.readJson()
+        endpoints[token] = {'register':
+                            {'token': client_token,
+                             'version_url': client_url}
+                            }
+        log.debug(f'endpoints: {endpoints}')
+        self.writeJson(endpoints)
 
     def _updateService(self, token, client_token=None, client_url=None, version=None):
+        endpoints = self.readJson()
         data = {'register':
                 {'token': client_token,
                  'version_url': client_url}
                 }
         # updates client_token and version_url without touching other stuff
-        self._endpoints[token].update(data)
+        endpoints[token].update(data)
+        self.writeJson(endpoints)
 
     def _setGroupIds(self, token, group_ids):
-        self._endpoints[token].update({"group_ids": group_ids})
+        endpoints = self.readJson()
+        endpoints[token].update({"group_ids": group_ids})
+        self.writeJson(endpoints)
 
     def _setRequiredBehavior(self, token, required_behavior, new=True):
-        self._endpoints[token]['new'] = new
-        self._endpoints[token]['required_behavior'] = required_behavior
+        endpoints = self.readJson()
+        endpoints[token]['new'] = new
+        endpoints[token]['required_behavior'] = required_behavior
+        self.writeJson(endpoints)
 
     def _removeService(self, token):
-        self._endpoints.pop(token)
+        endpoints = self.readJson()
+        endpoints.pop(token)
+        self.writeJson(endpoints)
 
     def isRegistered(self, token):
-        return token in self._endpoints
+        endpoints = self.readJson()
+        return token in endpoints
 
     def _setOfflineAt(self, token, offline_at):
-        self._endpoints[token]['offline_at'] = offline_at
+        endpoints = self.readJson()
+        endpoints[token]['offline_at'] = DtoS(offline_at)
+        self.writeJson(endpoints)
 
     def _token_by_group_id(self, group_id):
         token = None
-        for t, v in self._endpoints.items():
+        endpoints = self.readJson()
+        for t, v in endpoints.items():
             if group_id in v['group_ids']:
                 log.info(f'Found token: {t} for group_id: {group_id}')
                 token = t
         return token
 
     def _url_by_token(self, token):
-        return self._endpoints[token]['register']['version_url'][0]['base_url'] + '/' + \
-            self._endpoints[token]['register']['version_url'][0]['version']
+        endpoints = self.readJson()
+        base_url = endpoints[token]['register']['version_url'][0]['base_url']
+        version = endpoints[token]['register']['version_url'][0]['version']
+        return base_url + '/' + version
 
     def _background_job(self):
-        # log.debug(self._endpoints)
-        for endpoint in self._endpoints.values():
+        endpoints = self.readJson()
+        log.debug(endpoints)
+        for endpoint in endpoints.values():
             try:
                 base_url = endpoint['register']['version_url']
                 if endpoint.get('new') == True:
@@ -328,17 +365,23 @@ class RegistrationDictMan(RegistrationMan):
 
                 if endpoint.get('required_behavior') != None:
                     nb = endpoint.get('next_heartbeat')
-                    if nb is None or (nb < datetime.now()):
+                    if nb is None or (StoD(nb) < datetime.now()):
                         # next heartbeat is due, send it
 
                         interval = endpoint['required_behavior']['heartbeat_interval']
                         token = endpoint['register']['token']
-                        endpoint['next_heartbeat'] = self._send_heartbeat(
-                            base_url, interval, token)
+                        endpoint['next_heartbeat'] = DtoS(self._send_heartbeat(
+                            base_url, interval, token))
 
                 offline_at = endpoint.get('offline_at')
-                if offline_at != None and offline_at < datetime.now():
-                    log.debug(
-                        base_url + ' endpoint is offline. No Heartbeat received before' + offline_at)
+                if offline_at != None and StoD(offline_at) < datetime.now():
+                    log.info(
+                        f'{base_url} endpoint is offline. No Heartbeat received before {offline_at}')
             except Exception:
-                log.exception('OSCP background job failed this time')
+                log.exception(f'OSCP background job failed for {base_url}')
+        # if new endpoints registered this will help
+        # won't help if the url changed in the meantime,
+        # but will be enough for small use cases. Hopefully.
+        endpoints_temp = self.readJson()
+        endpoints_temp.update(endpoints)
+        self.writeJson(endpoints_temp)
