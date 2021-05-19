@@ -144,7 +144,7 @@ class RegistrationMan(object):
             payload['offline_mode_at'], "%Y-%m-%d %H:%M:%S")
         self._setOfflineAt(token, offline_at)
         # TODO setup online/offline listener
-        log.info(f"got a heartbeat. Will be offline at: {offline_at}")
+        log.info(f"got a heartbeat from {token}. Will be offline at: {offline_at}")
 
     def _getSupportedVersion(self, version_urls):
         # TODO check if any client version is supported by us
@@ -177,36 +177,29 @@ class RegistrationMan(object):
         data = {}  # not interested in heartbeats
         data = {'required_behaviour': {
             'heartbeat_interval': interval}}
-        try:
-            response = requests.post(
-                base_url+'/handshake_acknowledgment',
-                headers={
-                    'Authorization': 'Token '+token,
-                    'X-Request-ID': secrets.token_urlsafe(8)},
-                json=data)
-            if response.status_code >= 205:
-                raise Exception(response.text)
-        except requests.exceptions.ConnectionError:
-            log.error(f'Connection failed: {base_url}')
+        response = requests.post(
+            base_url+'/handshake_acknowledgment',
+            headers={
+                'Authorization': 'Token '+token,
+                'X-Request-ID': secrets.token_urlsafe(8)},
+            json=data)
+        if response.status_code >= 205:
+            raise Exception(response.text)
 
     def _send_register(self, base_url, new_token, client_token):
-        try:
-            log.info('send register to '+base_url)
+        log.info('send register to '+base_url)
 
-            data = {'token': new_token,
-                    'version_url': self.version_urls}
+        data = {'token': new_token,
+                'version_url': self.version_urls}
 
-            response = requests.post(
-                base_url+'/register',
-                headers={'Authorization': 'Token '+client_token,
-                         'X-Request-ID': secrets.token_urlsafe(8)},
-                json=data)
-            if response.status_code >= 205:
-                raise Exception(response.text)
-        except requests.exceptions.ConnectionError:
-            log.error(f'Connection failed: {base_url}')
-        except Exception as e:
-            log.exception(e)
+        response = requests.post(
+            base_url+'/register',
+            headers={'Authorization': 'Token '+client_token,
+                     'X-Request-ID': secrets.token_urlsafe(8)},
+            json=data)
+        if response.status_code >= 205:
+            raise Exception(response.text)
+
 
     def _background_job(self):
         log.debug('run backgroundjob')
@@ -351,7 +344,7 @@ class RegistrationDictMan(RegistrationMan):
     def _background_job(self):
         endpoints = self.readJson()
         log.debug(endpoints)
-        for endpoint in endpoints.values():
+        for endpoint_token, endpoint in endpoints.items():
             try:
                 base_url = endpoint['register']['version_url']
                 if endpoint.get('new') == True:
@@ -359,9 +352,11 @@ class RegistrationDictMan(RegistrationMan):
 
                     interval = endpoint['required_behavior']['heartbeat_interval']
                     token = endpoint['register']['token']
-                    self._send_ack(base_url, interval, token)
-
-                    endpoint['new'] = False
+                    try:
+                        self._send_ack(base_url, interval, token)
+                        endpoint['new'] = False
+                    except requests.exceptions.ConnectionError:
+                        log.error(f'Connection failed: {base_url}')
 
                 if endpoint.get('required_behavior') != None:
                     nb = endpoint.get('next_heartbeat')
@@ -372,6 +367,17 @@ class RegistrationDictMan(RegistrationMan):
                         token = endpoint['register']['token']
                         endpoint['next_heartbeat'] = DtoS(self._send_heartbeat(
                             base_url, interval, token))
+
+                if endpoint.get('should_register') == True:
+                    client_token = endpoint['register']['token']
+                    try:
+                        self._send_register(base_url, endpoint_token, client_token)
+                        endpoint['should_register'] = False
+                        endpoint['new']=True
+                    except requests.exceptions.ConnectionError:
+                        log.error(f'Connection failed: {base_url}')
+                    except Exception as e:
+                        log.exception(e)
 
                 offline_at = endpoint.get('offline_at')
                 if offline_at != None and StoD(offline_at) < datetime.now():
