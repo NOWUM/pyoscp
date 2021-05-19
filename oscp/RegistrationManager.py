@@ -34,13 +34,13 @@ class RegistrationMan(object):
         self.version_urls = version_urls
         # run background job every 5 seconds
         self.__stop_thread = False
-        # version_url, version = self._getSupportedVersion(
+        # base_url, version = self._getSupportedVersion(
         #     [{
         #         "version": "2.0",
         #         "base_url": "http://127.0.0.1:5000/oscp/cp"
         #     }])
         #
-        # self._addService('TESTTOKEN', "CLIENT_TESTTOKEN", version_url, version)
+        # self._addService('TESTTOKEN', "CLIENT_TESTTOKEN", base_url, version)
         #
         # self._setGroupIds('TESTTOKEN', ['TESTGROUPID'])
         #
@@ -81,10 +81,9 @@ class RegistrationMan(object):
         log.info('got register:' + str(payload))
         client_tokenB = payload['token']
         # - payload contains information to access client (tokenB)
-        base, version = self._getSupportedVersion(
-            payload['version_url'])
+        base_url, version = self._getSupportedVersion(payload['version_url'])
         self._updateService(
-            tokenA, client_tokenB, base, version)
+            tokenA, client_tokenB, base_url, version)
 
         if corr_id is None:
             self._removeService(tokenA)
@@ -92,18 +91,15 @@ class RegistrationMan(object):
             tokenC = secrets.token_urlsafe(32)
             data = {'token': tokenC, 'version_url': self.version_urls}
 
-            version_url, version = self._getSupportedVersion(
-                payload['version_url'])
-
             self._addService(
-                tokenC, payload['token'], version_url, version)
+                tokenC, payload['token'], base_url, version)
             try:
-                response = requests.post(version_url+'/register', json=data,
+                response = requests.post(base_url+'/register', json=data,
                                          headers={'Authorization': 'Token '+client_tokenB,
                                                   'X-Request-ID': secrets.token_urlsafe(8),
                                                   'X-Correlation-ID': req_id})
                 log.info(
-                    f"send register to {base + '/register'} with auth: {client_tokenB}")
+                    f"send register to {base_url + '/register'} with auth: {client_tokenB}")
                 if response.status_code >= 205:
                     raise Exception(response.json())
             except requests.exceptions.ConnectionError:
@@ -116,10 +112,10 @@ class RegistrationMan(object):
     def updateEndpoint(self, payload: oj.Register):
         token = self._check_access_token()
 
-        version_url, version = self._getSupportedVersion(
+        base_url, version = self._getSupportedVersion(
             payload['version_url'])
-        log.info(f'update endpoint url for: {version_url}')
-        self._addService(token, payload['token'], version_url, version)
+        log.info(f'update endpoint url for: {base_url}')
+        self._addService(token, payload['token'], base_url, version)
 
     def unregister(self):
         token = self._check_access_token()
@@ -143,7 +139,6 @@ class RegistrationMan(object):
         offline_at = datetime.strptime(
             payload['offline_mode_at'], "%Y-%m-%d %H:%M:%S")
         self._setOfflineAt(token, offline_at)
-        # TODO setup online/offline listener
         log.info(f"got a heartbeat from {token}. Will be offline at: {offline_at}")
 
     def _getSupportedVersion(self, version_urls):
@@ -337,8 +332,7 @@ class RegistrationDictMan(RegistrationMan):
 
     def _url_by_token(self, token):
         endpoints = self.readJson()
-        base_url = endpoints[token]['register']['version_url'][0]['base_url']
-        version = endpoints[token]['register']['version_url'][0]['version']
+        base_url, version = self._getSupportedVersion(endpoints[token]['register']['version_url'])
         return base_url + '/' + version
 
     def _background_job(self):
@@ -381,8 +375,7 @@ class RegistrationDictMan(RegistrationMan):
 
                 offline_at = endpoint.get('offline_at')
                 if offline_at != None and StoD(offline_at) < datetime.now():
-                    log.info(
-                        f'{base_url} endpoint is offline. No Heartbeat received before {offline_at}')
+                    log.info(f'{base_url} endpoint is offline. No Heartbeat received before {offline_at}')
             except Exception:
                 log.exception(f'OSCP background job failed for {base_url}')
         # if new endpoints registered this will help
