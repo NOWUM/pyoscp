@@ -32,6 +32,17 @@ class RegistrationMan(object):
         self.version_urls = version_urls
         # run background job every 5 seconds
         self.__stop_thread = False
+        # version_url, version = self._getSupportedVersion(
+        #     [{
+        #         "version": "2.0",
+        #         "base_url": "http://127.0.0.1:5000/oscp/cp"
+        #     }])
+        #
+        # self._addService('TESTTOKEN', "CLIENT_TESTTOKEN", version_url, version)
+        #
+        # self._setGroupIds('TESTTOKEN', ['TESTGROUPID'])
+        #
+        # # and ['group_id1'] from dso1.json
 
         def bck_job():
             ticker = threading.Event()
