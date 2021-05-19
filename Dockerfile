@@ -7,6 +7,8 @@ RUN pip install /app
 RUN rm -r ./oscp
 
 RUN useradd -s /bin/bash admin
+RUN mkdir /data
+RUN chown -R admin /app && chown -R admin /data
 
 USER admin
 VOLUME /data
