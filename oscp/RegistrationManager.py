@@ -274,7 +274,7 @@ class RegistrationDictMan(RegistrationMan):
     def __init__(self, version_urls, filename='endpoints.json'):
         self.filename = filename
 
-        self.writeJson({})
+        self.writeJson({'initialized': True})
         super().__init__(version_urls)
 
     def readJson(self):
