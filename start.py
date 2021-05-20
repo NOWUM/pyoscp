@@ -51,7 +51,6 @@ app = Flask(__name__)
 
 @app.route('/', methods=['POST', 'GET'])
 def home():
-    # return redirect('/oscp/fp/2.0/ui')
     return redirect('/oscp/ui')
 
 

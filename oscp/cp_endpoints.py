@@ -1,5 +1,3 @@
-from werkzeug.exceptions import Unauthorized
-from flask import request
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
 from oscp.registration import namespace_registration
 from oscp.json_models import (create_header_parser, add_models_to_namespace,
@@ -40,8 +38,7 @@ class adjustGroupCapacityForecast(Resource):
         If the Capacity Provider in fact decides to respond to the request it will report the updated Capacity Forecast
         within a UpdateGroupCapacityForecast message.
         """
-        if not self.registrationmanager.isRegistered(request.headers['Authorization']):
-            raise Unauthorized('Not authorized.')
+        self.registrationmanager._check_access_token()
         self.capacityprovider.handleAdjustGroupCapacityForecast(
             cap_provider_ns.payload)
         return '', 204
@@ -65,8 +62,7 @@ class groupCapacityComplianceError(Resource):
 
         The Capacity Forecast referred to by the Flexibility Provider SHALL be indicated by the X-Correlation-ID header.
         """
-        if not self.registrationmanager.isRegistered(request.headers['Authorization']):
-            raise Unauthorized('Not authorized.')
+        self.registrationmanager._check_access_token()
         self.capacityprovider.handleGroupCapacityComplianceError(
             cap_provider_ns.payload)
         return '', 204
@@ -92,8 +88,7 @@ class updateGroupMeasurements(Resource):
         Furthermore, the information can be used to determine a division of the Capacity Forecast over the different Flexibility Providers.
         The total usage can be 'nothing'. Therefore, the measurements field can be empty.
         """
-        if not self.registrationmanager.isRegistered(request.headers['Authorization']):
-            raise Unauthorized('Not authorized.')
+        self.registrationmanager._check_access_token()
         self.capacityprovider.handleUpdateGroupMeasurements(
             cap_provider_ns.payload)
         return '', 204

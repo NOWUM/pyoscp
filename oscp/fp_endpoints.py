@@ -1,12 +1,7 @@
-from flask import request
 from oscp.registration import namespace_registration
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
 from oscp.json_models import (create_header_parser, add_models_to_namespace,
                               UpdateGroupCapacityForecast, ForecastedBlock)
-
-# a namespace is a group of api routes which have the same prefix
-# (i think mostly all are in the same namespace in oscp)
-from werkzeug.exceptions import Unauthorized
 
 flex_provider_ns = Namespace(name="fp", validate=True, path="/fp/2.0")
 
@@ -38,8 +33,7 @@ class updateGroupCapacityForecast(Resource):
         The message is sent from Capacity Provider to the Flexibility Provider and from Flexibility Provider to Capacity Optimizer which
         should generate an Optimum capacity forecast for the capacity that should be used in the specific group.
         """
-        if not self.registrationmanager.isRegistered(request.headers['Authorization']):
-            raise Unauthorized('Not authorized.')
+        self.registrationmanager._check_access_token()
         self.flexibilityprovider.handleUpdateGroupCapacityForecast(
             flex_provider_ns.payload)
         return '', 204

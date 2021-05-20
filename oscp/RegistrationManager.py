@@ -1,3 +1,4 @@
+import os
 from dateutil import parser
 import json
 import secrets
@@ -195,7 +196,6 @@ class RegistrationMan(object):
         if response.status_code >= 205:
             raise Exception(response.text)
 
-
     def _background_job(self):
         log.debug('run backgroundjob')
 
@@ -211,17 +211,22 @@ class RegistrationMan(object):
         #     self._send_register(base_url, new_token, client_token)
 
     def getURL(self, token=None, group_id=None):
-        url = ""
+        '''
+        returns the Client URL and the related Token to access the client
+        using the given token to access this api
+        '''
+        url = None
+        client_token = None
         if token == None and group_id == None:
             log.error('Either token or group_id must be given.')
         else:
             if group_id and token == None:
                 token = self._token_by_group_id(group_id)
         if token:
-            url = self._url_by_token(token)
+            url, client_token = self._url_by_token(token)
 
         log.info(f'URL: {url}')
-        return url
+        return url, client_token
 
     def isRegistered(self, token):
         raise NotImplementedError()
@@ -333,10 +338,14 @@ class RegistrationDictMan(RegistrationMan):
     def _url_by_token(self, token):
         endpoints = self.readJson()
         base_url, version = self._getSupportedVersion(endpoints[token]['register']['version_url'])
-        return base_url + '/' + version
+        token = endpoints[token]['register']['token']
+        return base_url, token
 
     def _background_job(self):
-        endpoints = self.readJson()
+        try:
+            endpoints = self.readJson()
+        except:
+            endpoints = {}
         log.debug(endpoints)
         for endpoint_token, endpoint in endpoints.items():
             try:
@@ -367,7 +376,7 @@ class RegistrationDictMan(RegistrationMan):
                     try:
                         self._send_register(base_url, endpoint_token, client_token)
                         endpoint['should_register'] = False
-                        endpoint['new']=True
+                        endpoint['new'] = True
                     except requests.exceptions.ConnectionError:
                         log.error(f'Connection failed: {base_url}')
                     except Exception as e:
@@ -382,5 +391,9 @@ class RegistrationDictMan(RegistrationMan):
         # won't help if the url changed in the meantime,
         # but will be enough for small use cases. Hopefully.
         endpoints_temp = self.readJson()
-        endpoints_temp.update(endpoints)
-        self.writeJson(endpoints_temp)
+        try:
+            endpoints_temp = self.readJson()
+            endpoints_temp.update(endpoints)
+            self.writeJson(endpoints_temp)
+        except:
+            log.error('race in background job')

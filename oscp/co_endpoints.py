@@ -1,12 +1,7 @@
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
-from flask import request
 from oscp.json_models import (add_models_to_namespace, create_header_parser,
                               UpdateGroupCapacityForecast, ForecastedBlock)
 from oscp.registration import namespace_registration
-
-# a namespace is a group of api routes which have the same prefix
-# (i think mostly all are in the same namespace in oscp)
-from werkzeug.exceptions import Unauthorized
 
 cap_optimizer_ns = Namespace(name="co", validate=True, path="/co/2.0")
 
@@ -52,8 +47,7 @@ class updateAssetMeasurements(Resource):
 
     @cap_optimizer_ns.expect(UpdateGroupCapacityForecast)
     def post(self):
-        if not self.registrationmanager.isRegistered(request.headers['Authorization']):
-            raise Unauthorized('Not authorized.')
+        self.registrationmanager._check_access_token()
         self.capacityoptimizer.handleUpdateAssetMeasurements(
             cap_optimizer_ns.payload)
         return '', 204

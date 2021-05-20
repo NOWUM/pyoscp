@@ -1,6 +1,4 @@
-from flask import request
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
-from werkzeug.exceptions import Unauthorized
 from oscp.registration import namespace_registration
 from oscp.json_models import (create_header_parser, add_models_to_namespace,
                               ForecastedBlock, UpdateGroupLoadForecast,
@@ -36,8 +34,7 @@ class updateGroupLoadForecast(Resource):
         Describe me.
         Please.
         """
-        if not self.registrationmanager.isRegistered(request.headers['Authorization']):
-            raise Unauthorized('Not authorized.')
+        self.registrationmanager._check_access_token()
         self.energyprovider.handleUpdateGroupLoadForecast(
             energy_provider_ns.payload)
         return '', 204
