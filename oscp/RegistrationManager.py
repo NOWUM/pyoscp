@@ -340,7 +340,7 @@ class RegistrationDictMan(RegistrationMan):
 
     def _url_by_token(self, token):
         endpoints = self.readJson()
-        base_url= endpoints[token]['register']['base_url']
+        base_url = endpoints[token]['register']['base_url']
         token = endpoints[token]['register']['token']
         return base_url, token
 
