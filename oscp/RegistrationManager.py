@@ -223,7 +223,10 @@ class RegistrationMan(object):
             if group_id and token == None:
                 token = self._token_by_group_id(group_id)
         if token:
-            url, client_token = self._url_by_token(token)
+            try:
+                url, client_token = self._url_by_token(token)
+            except KeyError:
+                log.error(f'invalid token: {token}')
 
         log.info(f'URL: {url}')
         return url, client_token
@@ -286,7 +289,7 @@ class RegistrationDictMan(RegistrationMan):
         endpoints = self.readJson()
         endpoints[token] = {'register':
                             {'token': client_token,
-                             'version_url': client_url}
+                             'base_url': client_url}
                             }
         log.debug(f'endpoints: {endpoints}')
         self.writeJson(endpoints)
@@ -295,7 +298,7 @@ class RegistrationDictMan(RegistrationMan):
         endpoints = self.readJson()
         data = {'register':
                 {'token': client_token,
-                 'version_url': client_url}
+                 'base_url': client_url}
                 }
         # updates client_token and version_url without touching other stuff
         endpoints[token].update(data)
@@ -337,7 +340,7 @@ class RegistrationDictMan(RegistrationMan):
 
     def _url_by_token(self, token):
         endpoints = self.readJson()
-        base_url, version = self._getSupportedVersion(endpoints[token]['register']['version_url'])
+        base_url= endpoints[token]['register']['base_url']
         token = endpoints[token]['register']['token']
         return base_url, token
 
@@ -349,7 +352,7 @@ class RegistrationDictMan(RegistrationMan):
         log.debug(endpoints)
         for endpoint_token, endpoint in endpoints.items():
             try:
-                base_url = endpoint['register']['version_url']
+                base_url = endpoint['register']['base_url']
                 if endpoint.get('new') == True:
                     # send ack for new handshakes
 
