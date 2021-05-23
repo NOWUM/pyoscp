@@ -146,24 +146,6 @@ UpdateAssetMeasurements = Model('UpdateAssetMeasurements', {
     'measurements': fields.List(fields.Nested(AssetMeasurement, description='Contains the accumulated measurements.'))
 })
 
-UpdateGroupPrice = Model('UpdateGroupPrice', {
-    'group_id': fields.String(
-        description='The id of the area where the price is valid?'),
-    'forecasted_blocks': fields.List(fields.Nested(ForecastedBlock),
-                                     description='The technical content of this message. Describes the price for a requested load profile')
-})
-
-UpdateGroupLoadForecast = Model('UpdateGroupLoadForecast', {
-    'group_id': fields.String(
-        description='The id of the area in which the Flexibility Provider has Flexibility Resources connected to the '
-                    'grid.'),
-    'type': fields.String(enum=capacity_forecast_type, description='Identifies the type of forecast.'),
-    'forecasted_blocks': fields.List(fields.Nested(ForecastedBlock),
-                                     description='The technical content of this message. Describes the amount and period of the to be adjusted '
-                                                 'capacity')
-})
-
-
 # models must be registered at a namespace.
 # If the API is somehow using a given model, you should add it to the array
 def add_models_to_namespace(namespace, models):
