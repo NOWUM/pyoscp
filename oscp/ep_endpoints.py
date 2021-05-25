@@ -28,7 +28,7 @@ class updateGroupLoadForecast(Resource):
         Update Load TimeSeries which can contain a Load or a Price (or both).
         Can be used by a EnergyProvider or a DSO to communicate a price series
         """
-        self.registrationmanager._check_access_token()
+        token = self.registrationmanager._check_access_token()
         self.energyprovider.handleUpdateGroupLoadForecast(
-            energy_provider_ns.payload)
+            energy_provider_ns.payload, token)
         return '', 204
