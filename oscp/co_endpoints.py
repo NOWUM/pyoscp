@@ -1,11 +1,11 @@
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
 from oscp.json_models import (add_models_to_namespace, create_header_parser,
-                              UpdateGroupCapacityForecast, ForecastedBlock)
+                              GroupCapacityForecast, ForecastedBlock)
 from oscp.registration import namespace_registration
 
 cap_optimizer_ns = Namespace(name="co", validate=True, path="/co/2.0")
 
-models = [UpdateGroupCapacityForecast, ForecastedBlock]
+models = [GroupCapacityForecast, ForecastedBlock]
 
 add_models_to_namespace(cap_optimizer_ns, models)
 header_parser = create_header_parser(cap_optimizer_ns)
@@ -22,7 +22,7 @@ class updateGroupCapacityForecast(Resource):
         self.registrationmanager = kwargs['registrationmanager']
         super().__init__(api, *args, **kwargs)
 
-    @cap_optimizer_ns.expect(UpdateGroupCapacityForecast)
+    @cap_optimizer_ns.expect(GroupCapacityForecast)
     # @forecast_ns.response(204, 'No Content')
     def post(self):
         """
@@ -45,7 +45,7 @@ class updateAssetMeasurements(Resource):
         self.registrationmanager = kwargs['registrationmanager']
         super().__init__(api, *args, **kwargs)
 
-    @cap_optimizer_ns.expect(UpdateGroupCapacityForecast)
+    @cap_optimizer_ns.expect(GroupCapacityForecast)
     def post(self):
         self.registrationmanager._check_access_token()
         self.capacityoptimizer.handleUpdateAssetMeasurements(

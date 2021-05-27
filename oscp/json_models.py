@@ -69,7 +69,7 @@ ForecastedBlock = Model('ForecastedBlock', {
     'end_time': fields.DateTime(),
 })
 
-UpdateGroupCapacityForecast = Model('UpdateGroupCapacityForecast', {
+GroupCapacityForecast = Model('GroupCapacityForecast', {
     'group_id': fields.String(
         description='The id of the area in which the Flexibility Provider has Flexibility Resources connected to the '
                     'grid.'),
@@ -79,15 +79,6 @@ UpdateGroupCapacityForecast = Model('UpdateGroupCapacityForecast', {
                                                  'period of the to be adjusted capacity')
 })
 
-AdjustGroupCapacityForecast = Model('AdjustGroupCapacityForecast', {
-    'group_id': fields.String(
-        description='The id of the area in which the Flexibility Provider has Flexibility Resources connected to the '
-                    'grid.'),
-    'type': fields.String(enum=capacity_forecast_type, description='Identifies the type of forecast.'),
-    'forecasted_blocks': fields.List(fields.Nested(ForecastedBlock),
-                                     description='The technical content of this message. Describes the amount and period of the to be adjusted '
-                                                 'capacity')
-})
 
 GroupCapacityComplianceError = Model('GroupCapacityComplianceError', {
     'message': fields.String(

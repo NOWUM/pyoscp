@@ -1,10 +1,9 @@
-import os
 from dateutil import parser
 import json
 import secrets
 import oscp.json_models as oj
 import logging
-from werkzeug.exceptions import Unauthorized, Forbidden
+from werkzeug.exceptions import Unauthorized, Forbidden, BadRequest
 import requests
 import threading
 from flask import request
@@ -35,17 +34,6 @@ class RegistrationMan(object):
         self.version_urls = version_urls
         # run background job every 5 seconds
         self.__stop_thread = False
-        # base_url, version = self._getSupportedVersion(
-        #     [{
-        #         "version": "2.0",
-        #         "base_url": "http://127.0.0.1:5000/oscp/cp"
-        #     }])
-        #
-        # self._addService('TESTTOKEN', "CLIENT_TESTTOKEN", base_url, version)
-        #
-        # self._setGroupIds('TESTTOKEN', ['TESTGROUPID'])
-        #
-        # # and ['group_id1'] from dso1.json
 
         def bck_job():
             ticker = threading.Event()
@@ -113,8 +101,7 @@ class RegistrationMan(object):
     def updateEndpoint(self, payload: oj.Register):
         token = self._check_access_token()
 
-        base_url, version = self._getSupportedVersion(
-            payload['version_url'])
+        base_url, version = self._getSupportedVersion(payload['version_url'])
         log.info(f'update endpoint url for: {base_url}')
         self._addService(token, payload['token'], base_url, version)
 
@@ -143,9 +130,11 @@ class RegistrationMan(object):
         log.info(f"got a heartbeat from {token}. Will be offline at: {offline_at}")
 
     def _getSupportedVersion(self, version_urls):
-        # TODO check if any client version is supported by us
-        # compare with self.version_urls
-        return version_urls[0]['base_url'], version_urls[0]['version']
+        for my_version in self.version_urls:
+            for client_version in version_urls:
+                if client_version['version'] == my_version['version']:
+                    return client_version['base_url'], client_version['version']
+        raise BadRequest('unsupported version')
 
     def _send_heartbeat(self, base_url, interval, token):
         next_heartbeat = datetime.now()+timedelta(seconds=interval)

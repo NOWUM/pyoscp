@@ -1,7 +1,7 @@
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
 from oscp.registration import namespace_registration
 from oscp.json_models import (create_header_parser, add_models_to_namespace,
-                              ForecastedBlock, AdjustGroupCapacityForecast,
+                              ForecastedBlock, GroupCapacityForecast,
                               GroupCapacityComplianceError, UpdateGroupMeasurements,
                               EnergyMeasurement)
 
@@ -9,7 +9,7 @@ from oscp.json_models import (create_header_parser, add_models_to_namespace,
 # (i think mostly all are in the same namespace in oscp)
 cap_provider_ns = Namespace(name="cp", validate=True, path="/cp/2.0")
 
-models = [ForecastedBlock, AdjustGroupCapacityForecast, UpdateGroupMeasurements,
+models = [ForecastedBlock, GroupCapacityForecast, UpdateGroupMeasurements,
           GroupCapacityComplianceError, EnergyMeasurement]
 
 add_models_to_namespace(cap_provider_ns, models)
@@ -27,7 +27,7 @@ class adjustGroupCapacityForecast(Resource):
         self.registrationmanager = kwargs['registrationmanager']
         super().__init__(api, *args, **kwargs)
 
-    @cap_provider_ns.expect(AdjustGroupCapacityForecast)
+    @cap_provider_ns.expect(GroupCapacityForecast)
     def post(self):
         """
         Demands do not match the capacity limits

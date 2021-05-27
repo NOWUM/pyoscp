@@ -1,11 +1,11 @@
 from oscp.registration import namespace_registration
 from flask_restx import Resource, Namespace  # ,add_models_to__namespace
 from oscp.json_models import (create_header_parser, add_models_to_namespace,
-                              UpdateGroupCapacityForecast, ForecastedBlock)
+                              GroupCapacityForecast, ForecastedBlock)
 
 flex_provider_ns = Namespace(name="fp", validate=True, path="/fp/2.0")
 
-models = [UpdateGroupCapacityForecast, ForecastedBlock]
+models = [GroupCapacityForecast, ForecastedBlock]
 
 add_models_to_namespace(flex_provider_ns, models)
 
@@ -25,8 +25,8 @@ class updateGroupCapacityForecast(Resource):
         self.registrationmanager = kwargs['registrationmanager']
         super().__init__(api, *args, **kwargs)
 
-    @flex_provider_ns.expect(UpdateGroupCapacityForecast)
-    @flex_provider_ns.marshal_with(UpdateGroupCapacityForecast)
+    @flex_provider_ns.expect(GroupCapacityForecast)
+    @flex_provider_ns.marshal_with(GroupCapacityForecast)
     # @forecast_ns.response(204, 'No Content')
     def post(self):
         """
