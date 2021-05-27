@@ -15,9 +15,10 @@ from oscp.fp_endpoints import flex_provider_ns
 from oscp.cp_endpoints import cap_provider_ns
 from oscp.co_endpoints import cap_optimizer_ns
 from oscp.ep_endpoints import energy_price_ns
+from oscp.epc_endpoints import energy_price_client_ns
 
 
-def createBlueprint(injected_objects, actors=['fp', 'cp', 'co', 'ep']):
+def createBlueprint(injected_objects, actors=['fp', 'cp', 'co', 'ep', 'epc']):
     """
     Creates API blueprint with injected Objects.
     Must contain a forecastmanager and others...
@@ -50,7 +51,7 @@ def createBlueprint(injected_objects, actors=['fp', 'cp', 'co', 'ep']):
 
     # inject objects through class kwargs
     # (small hack, must be done for new namespaces too)
-    for ns in [flex_provider_ns, cap_provider_ns, cap_optimizer_ns, energy_price_ns]:
+    for ns in [flex_provider_ns, cap_provider_ns, cap_optimizer_ns, energy_price_ns, energy_price_client_ns]:
         for res in ns.resources:
             res.kwargs['resource_class_kwargs'] = injected_objects
 
@@ -66,5 +67,8 @@ def createBlueprint(injected_objects, actors=['fp', 'cp', 'co', 'ep']):
 
     if 'ep' in actors:
         api.add_namespace(energy_price_ns)
+
+    if 'epc' in actors:
+        api.add_namespace(energy_price_client_ns)
 
     return blueprint

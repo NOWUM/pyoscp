@@ -10,7 +10,7 @@ from oscp.registration import namespace_registration
 from oscp.json_models import create_header_parser, add_models_to_namespace
 from oscp.ep_models import ExtForecastedBlock, GroupCapacityPrice
 
-energy_price_client_ns = Namespace(name="epc", validate=True, path="/ep/2.0")
+energy_price_client_ns = Namespace(name="epc", validate=True, path="/epc/2.0")
 
 models = [ExtForecastedBlock, GroupCapacityPrice]
 
@@ -35,6 +35,6 @@ class updateGroupCapacityPrice(Resource):
         Can be used by a EnergyProvider or a DSO to communicate a price series
         """
         token = self.registrationmanager._check_access_token()
-        self.pricemanager.handleUpdateGroupLoadForecast(
+        self.pricemanager.handleUpdateGroupCapacityPrice(
             energy_price_client_ns.payload, token)
         return '', 204
