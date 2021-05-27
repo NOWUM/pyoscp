@@ -90,7 +90,7 @@ class RegistrationMan(object):
                 log.info(
                     f"send register to {base_url + '/register'} with auth: {client_tokenB}")
                 if response.status_code >= 205:
-                    raise Exception(response.json())
+                    raise Exception(f'{response.status_code}, {response.json()}')
             except requests.exceptions.ConnectionError:
                 log.error("connection failed")
             except Exception:
