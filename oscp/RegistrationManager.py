@@ -247,6 +247,9 @@ class RegistrationMan(object):
     def _setGroupIds(self, token, group_ids):
         raise NotImplementedError()
 
+    def getGroupIds(self,token):
+        raise NotImplementedError()
+
     def _setRequiredBehavior(self, token, req_behavior, new=True):
         raise NotImplementedError()
 
@@ -312,6 +315,11 @@ class RegistrationDictMan(RegistrationMan):
         endpoints = self.readJson()
         endpoints[token].update({"group_ids": group_ids})
         self.writeJson(endpoints)
+
+    def getGroupIds(self,token):
+        endpoints = self.readJson()
+        endpoints[token].get("group_ids")
+        return
 
     def _setRequiredBehavior(self, token, required_behavior, new=True):
         endpoints = self.readJson()
