@@ -1,3 +1,4 @@
+import os
 from dateutil import parser
 import json
 import secrets
@@ -34,6 +35,17 @@ class RegistrationMan(object):
         self.version_urls = version_urls
         # run background job every 5 seconds
         self.__stop_thread = False
+        base_url, version = self._getSupportedVersion(
+            [{
+                "version": "2.0",
+                "base_url": "http://127.0.0.1:5000/oscp/cp"
+            }])
+
+        self._addService('TESTTOKEN', "CLIENT_TESTTOKEN", base_url, version)
+
+        self._setGroupIds('TESTTOKEN', ['_fdac0b54-2845-4c32-b580-86119c253c16'])
+        #
+        # # and ['group_id1'] from dso1.json
 
         def bck_job():
             ticker = threading.Event()
@@ -220,6 +232,9 @@ class RegistrationMan(object):
         log.info(f'URL: {url}')
         return url, client_token
 
+    def getEndpoints(self):
+        raise NotImplementedError()
+
     def isRegistered(self, token):
         raise NotImplementedError()
 
@@ -308,6 +323,9 @@ class RegistrationDictMan(RegistrationMan):
         endpoints = self.readJson()
         endpoints.pop(token)
         self.writeJson(endpoints)
+
+    def getEndpoints(self):
+        return self.readJson()
 
     def isRegistered(self, token):
         endpoints = self.readJson()
