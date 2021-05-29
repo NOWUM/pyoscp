@@ -19,8 +19,7 @@ energy_type = ['FLEXIBLE', 'NONFLEXIBLE', 'TOTAL']
 measurement_configuration = ['CONTINUOUS', 'INTERMITTENT']
 phase_indicator = ['UNKNOWN', 'ONE', 'TWO', 'THREE', 'ALL']
 asset_category = ['CHARGING', 'CONSUMPTION', 'GENERATION', 'STORAGE']
-capacity_forecast_type = ['CONSUMPTION', 'GENERATION',
-                          'FALLBACK_CONSUMPTION', 'FALLBACK_GENERATION', 'OPTIMUM']
+capacity_forecast_type = ['CONSUMPTION', 'GENERATION', 'FALLBACK_CONSUMPTION', 'FALLBACK_GENERATION', 'OPTIMUM']
 
 RequiredBehaviour = Model('RequiredBehaviour', {
     'heartbeat_interval': fields.Integer(description='Optional. The interval (in seconds) in which the sender of '
