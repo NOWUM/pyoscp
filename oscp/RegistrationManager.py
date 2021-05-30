@@ -41,11 +41,7 @@ class RegistrationMan(object):
                 "base_url": "http://127.0.0.1:5000/oscp/cp"
             }])
 
-        self._addService('TESTTOKEN', "CLIENT_TESTTOKEN", base_url, version)
-
-        self._setGroupIds('TESTTOKEN', ['_fdac0b54-2845-4c32-b580-86119c253c16'])
-        #
-        # # and ['group_id1'] from dso1.json
+        # and ['group_id1'] from dso1.json
 
         def bck_job():
             ticker = threading.Event()
