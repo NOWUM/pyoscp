@@ -272,6 +272,9 @@ def StoD(string: str):
 def DtoS(date):
     return date.isoformat()
 
+from multiprocessing import Lock
+
+lock = Lock()
 
 class RegistrationDictMan(RegistrationMan):
     def __init__(self, version_urls, filename='endpoints.json'):
@@ -289,28 +292,31 @@ class RegistrationDictMan(RegistrationMan):
             json.dump(endpoints, f, indent=4, sort_keys=False)
 
     def _addService(self, token, client_token, client_url, version=None):
-        endpoints = self.readJson()
-        endpoints[token] = {'register':
-                            {'token': client_token,
-                             'base_url': client_url}
-                            }
-        log.debug(f'endpoints: {endpoints}')
-        self.writeJson(endpoints)
+        with lock:
+            endpoints = self.readJson()
+            endpoints[token] = {'register':
+                                {'token': client_token,
+                                 'base_url': client_url}
+                                }
+            log.debug(f'endpoints: {endpoints}')
+            self.writeJson(endpoints)
 
     def _updateService(self, token, client_token=None, client_url=None, version=None):
-        endpoints = self.readJson()
-        data = {'register':
-                {'token': client_token,
-                 'base_url': client_url}
-                }
-        # updates client_token and version_url without touching other stuff
-        endpoints[token].update(data)
-        self.writeJson(endpoints)
+        with lock:
+            endpoints = self.readJson()
+            data = {'register':
+                    {'token': client_token,
+                     'base_url': client_url}
+                    }
+            # updates client_token and version_url without touching other stuff
+            endpoints[token].update(data)
+            self.writeJson(endpoints)
 
     def _setGroupIds(self, token, group_ids):
-        endpoints = self.readJson()
-        endpoints[token].update({"group_ids": group_ids})
-        self.writeJson(endpoints)
+        with lock:
+            endpoints = self.readJson()
+            endpoints[token].update({"group_ids": group_ids})
+            self.writeJson(endpoints)
 
     def getGroupIds(self,token):
         endpoints = self.readJson()
@@ -318,15 +324,17 @@ class RegistrationDictMan(RegistrationMan):
         return
 
     def _setRequiredBehavior(self, token, required_behavior, new=True):
-        endpoints = self.readJson()
-        endpoints[token]['new'] = new
-        endpoints[token]['required_behavior'] = required_behavior
-        self.writeJson(endpoints)
+        with lock:
+            endpoints = self.readJson()
+            endpoints[token]['new'] = new
+            endpoints[token]['required_behavior'] = required_behavior
+            self.writeJson(endpoints)
 
     def _removeService(self, token):
-        endpoints = self.readJson()
-        endpoints.pop(token)
-        self.writeJson(endpoints)
+        with lock:
+            endpoints = self.readJson()
+            endpoints.pop(token)
+            self.writeJson(endpoints)
 
     def getEndpoints(self):
         return self.readJson()
@@ -336,9 +344,10 @@ class RegistrationDictMan(RegistrationMan):
         return token in endpoints
 
     def _setOfflineAt(self, token, offline_at):
-        endpoints = self.readJson()
-        endpoints[token]['offline_at'] = DtoS(offline_at)
-        self.writeJson(endpoints)
+        with lock:
+            endpoints = self.readJson()
+            endpoints[token]['offline_at'] = DtoS(offline_at)
+            self.writeJson(endpoints)
 
     def _token_by_group_id(self, group_id):
         token = None
@@ -356,58 +365,46 @@ class RegistrationDictMan(RegistrationMan):
         return base_url, token
 
     def _background_job(self):
-        try:
+        with lock:
             endpoints = self.readJson()
-        except:
-            endpoints = {}
-        log.debug(endpoints)
-        for endpoint_token, endpoint in endpoints.items():
-            try:
-                base_url = endpoint['register']['base_url']
-                if endpoint.get('new') == True:
-                    # send ack for new handshakes
-
-                    interval = endpoint['required_behavior']['heartbeat_interval']
-                    token = endpoint['register']['token']
-                    try:
-                        self._send_ack(base_url, interval, token)
-                        endpoint['new'] = False
-                    except requests.exceptions.ConnectionError:
-                        log.error(f'Connection failed: {base_url}')
-
-                if endpoint.get('required_behavior') != None:
-                    nb = endpoint.get('next_heartbeat')
-                    if nb is None or (StoD(nb) < datetime.now()):
-                        # next heartbeat is due, send it
+            for endpoint_token, endpoint in endpoints.items():
+                try:
+                    base_url = endpoint['register']['base_url']
+                    if endpoint.get('new') == True:
+                        # send ack for new handshakes
 
                         interval = endpoint['required_behavior']['heartbeat_interval']
                         token = endpoint['register']['token']
-                        endpoint['next_heartbeat'] = DtoS(self._send_heartbeat(
-                            base_url, interval, token))
+                        try:
+                            self._send_ack(base_url, interval, token)
+                            endpoint['new'] = False
+                        except requests.exceptions.ConnectionError:
+                            log.error(f'Connection failed: {base_url}')
 
-                if endpoint.get('should_register') == True:
-                    client_token = endpoint['register']['token']
-                    try:
-                        self._send_register(base_url, endpoint_token, client_token)
-                        endpoint['should_register'] = False
-                        endpoint['new'] = True
-                    except requests.exceptions.ConnectionError:
-                        log.error(f'Connection failed: {base_url}')
-                    except Exception as e:
-                        log.exception(e)
+                    if endpoint.get('required_behavior') != None:
+                        nb = endpoint.get('next_heartbeat')
+                        if nb is None or (StoD(nb) < datetime.now()):
+                            # next heartbeat is due, send it
 
-                offline_at = endpoint.get('offline_at')
-                if offline_at != None and StoD(offline_at) < datetime.now():
-                    log.info(f'{base_url} endpoint is offline. No Heartbeat received before {offline_at}')
-            except Exception:
-                log.exception(f'OSCP background job failed for {base_url}')
-        # if new endpoints registered this will help
-        # won't help if the url changed in the meantime,
-        # but will be enough for small use cases. Hopefully.
-        endpoints_temp = self.readJson()
-        try:
-            endpoints_temp = self.readJson()
-            endpoints_temp.update(endpoints)
-            self.writeJson(endpoints_temp)
-        except:
-            log.error('race in background job')
+                            interval = endpoint['required_behavior']['heartbeat_interval']
+                            token = endpoint['register']['token']
+                            endpoint['next_heartbeat'] = DtoS(self._send_heartbeat(
+                                base_url, interval, token))
+
+                    if endpoint.get('should_register') == True:
+                        client_token = endpoint['register']['token']
+                        try:
+                            self._send_register(base_url, endpoint_token, client_token)
+                            endpoint['should_register'] = False
+                            endpoint['new'] = True
+                        except requests.exceptions.ConnectionError:
+                            log.error(f'Connection failed: {base_url}')
+                        except Exception as e:
+                            log.exception(e)
+
+                    offline_at = endpoint.get('offline_at')
+                    if offline_at != None and StoD(offline_at) < datetime.now():
+                        log.info(f'{base_url} endpoint is offline. No Heartbeat received before {offline_at}')
+                except Exception:
+                    log.exception(f'OSCP background job failed for {base_url}')
+            self.writeJson(endpoints)
