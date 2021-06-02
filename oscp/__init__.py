@@ -14,8 +14,8 @@ from flask_restx import Api
 from oscp.fp_endpoints import flex_provider_ns
 from oscp.cp_endpoints import cap_provider_ns
 from oscp.co_endpoints import cap_optimizer_ns
-from oscp.ep_endpoints import energy_price_ns
-from oscp.epc_endpoints import energy_price_client_ns
+from oscp.ep_endpoints import addPrice
+from oscp.epc_endpoints import addForPriceCalculation
 
 
 def createBlueprint(injected_objects, actors=['fp', 'cp', 'co', 'ep', 'epc']):
@@ -49,9 +49,11 @@ def createBlueprint(injected_objects, actors=['fp', 'cp', 'co', 'ep', 'epc']):
         default_label="Python OSCP Framework"
     )
 
+
+
     # inject objects through class kwargs
     # (small hack, must be done for new namespaces too)
-    for ns in [flex_provider_ns, cap_provider_ns, cap_optimizer_ns, energy_price_ns, energy_price_client_ns]:
+    for ns in [flex_provider_ns, cap_provider_ns, cap_optimizer_ns]:
         for res in ns.resources:
             res.kwargs['resource_class_kwargs'] = injected_objects
 
@@ -66,9 +68,11 @@ def createBlueprint(injected_objects, actors=['fp', 'cp', 'co', 'ep', 'epc']):
         api.add_namespace(cap_optimizer_ns)
 
     if 'ep' in actors:
-        api.add_namespace(energy_price_ns)
+        addPrice(cap_provider_ns)
+        api.add_namespace(cap_provider_ns)
 
     if 'epc' in actors:
-        api.add_namespace(energy_price_client_ns)
+        addForPriceCalculation(flex_provider_ns)
+        api.add_namespace(flex_provider_ns)
 
     return blueprint
