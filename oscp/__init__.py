@@ -71,6 +71,8 @@ def createBlueprint(injected_objects, actor):
         addInjected(cap_provider_ns)
     elif actor == 'ep':
         ep_namespace = Namespace(name="ep", validate=True, path="/ep/2.0")
+        from oscp.registration import namespace_registration
+        namespace_registration(ep_namespace)
         addPrice(ep_namespace)
         addInjected(ep_namespace)
     elif actor == 'sch':
