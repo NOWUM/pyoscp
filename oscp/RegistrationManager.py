@@ -286,7 +286,7 @@ lock = Lock()
 
 
 class RegistrationDictMan(RegistrationMan):
-    def __init__(self, version_urls, filename='endpoints.json'):
+    def __init__(self, version_urls, filename='./endpoints.json'):
         self.filename = filename
 
         self.writeJson({})
