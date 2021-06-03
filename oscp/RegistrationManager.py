@@ -216,16 +216,19 @@ class RegistrationMan(object):
         client_token = None
         if token == None and group_id == None:
             log.error('Either token or group_id must be given.')
-        else:
-            if group_id and token == None:
+        elif token == None and group_id:
+            try:
                 token = self._token_by_group_id(group_id)
+            except KeyError:
+                log.error(f'invalid group_id: {group_id}')
+
         if token:
             try:
                 url, client_token = self._url_by_token(token)
             except KeyError:
                 log.error(f'invalid token: {token}')
 
-        log.info(f'URL: {url}')
+        log.debug(f'URL: {url}')
         return url, client_token
 
     def getEndpoints(self):
@@ -320,8 +323,7 @@ class RegistrationDictMan(RegistrationMan):
 
     def getGroupIds(self,token):
         endpoints = self.readJson()
-        endpoints[token].get("group_ids")
-        return
+        return endpoints[token].get("group_ids")
 
     def _setRequiredBehavior(self, token, required_behavior, new=True):
         with lock:
@@ -354,8 +356,10 @@ class RegistrationDictMan(RegistrationMan):
         endpoints = self.readJson()
         for t, v in endpoints.items():
             if group_id in v['group_ids']:
-                log.info(f'Found token: {t} for group_id: {group_id}')
+                log.debug(f'Found token: {t} for group_id: {group_id}')
                 token = t
+        if token == None:
+            log.error(f'No token found for group_id: {group_id}')
         return token
 
     def _url_by_token(self, token):
