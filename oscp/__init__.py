@@ -8,7 +8,7 @@ Created on Sun Mar 14 18:02:46 2021
 Api definition file
 """
 from flask import Blueprint
-from flask_restx import Api
+from flask_restx import Api, Namespace
 
 # from oscp.forecasts import forecast_ns
 from oscp.fp_endpoints import flex_provider_ns
@@ -18,7 +18,7 @@ from oscp.ep_endpoints import addPrice
 from oscp.epc_endpoints import addForPriceCalculation
 
 
-def createBlueprint(injected_objects, actors=['fp', 'cp', 'co', 'ep', 'epc']):
+def createBlueprint(injected_objects, actor):
     """
     Creates API blueprint with injected Objects.
     Must contain a forecastmanager and others...
@@ -33,6 +33,8 @@ def createBlueprint(injected_objects, actors=['fp', 'cp', 'co', 'ep', 'epc']):
     :return blueprint: Blueprint dies das
 
     """
+    if not actor in ['fp', 'cp', 'co', 'dso', 'ep', 'sch']:
+        raise Exception('unknown actor')
     blueprint = Blueprint("api", __name__, url_prefix="/oscp")
     authorizations = {"Bearer": {"type": "apiKey",
                                  "in": "header",
@@ -49,30 +51,30 @@ def createBlueprint(injected_objects, actors=['fp', 'cp', 'co', 'ep', 'epc']):
         default_label="Python OSCP Framework"
     )
 
-
-
     # inject objects through class kwargs
     # (small hack, must be done for new namespaces too)
-    for ns in [flex_provider_ns, cap_provider_ns, cap_optimizer_ns]:
+
+    def addInjected(ns):
         for res in ns.resources:
             res.kwargs['resource_class_kwargs'] = injected_objects
+        api.add_namespace(ns)
 
     # register namespace at api (must be done for new namespaces too)
-    if 'fp' in actors:
-        api.add_namespace(flex_provider_ns)
-
-    if 'cp' in actors:
-        api.add_namespace(cap_provider_ns)
-
-    if 'co' in actors:
-        api.add_namespace(cap_optimizer_ns)
-
-    if 'ep' in actors:
+    if actor == 'fp':
+        addInjected(flex_provider_ns)
+    elif actor == 'cp':
+        addInjected(cap_provider_ns)
+    elif actor == 'co':
+        addInjected(cap_optimizer_ns)
+    elif actor == 'dso':
         addPrice(cap_provider_ns)
-        api.add_namespace(cap_provider_ns)
-
-    if 'epc' in actors:
+        addInjected(cap_provider_ns)
+    elif actor == 'ep':
+        ep_namespace = Namespace(name="ep", validate=True, path="/ep/2.0")
+        addPrice(ep_namespace)
+        addInjected(ep_namespace)
+    elif actor == 'sch':
         addForPriceCalculation(flex_provider_ns)
-        api.add_namespace(flex_provider_ns)
+        addInjected(flex_provider_ns)
 
     return blueprint

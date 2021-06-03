@@ -1,4 +1,4 @@
-import os
+from multiprocessing import Lock
 from dateutil import parser
 import json
 import secrets
@@ -24,6 +24,16 @@ def _getLatestVersion(version_urls):
             baseUrl = v['base_url']
             latest = cur
     return str(latest), baseUrl
+
+
+def createOscpHeader(token, correlation=None):
+    headers = {
+        'Authorization': 'Token '+token,
+        'X-Request-ID': secrets.token_urlsafe(8),
+    }
+    if correlation:
+        headers['X-Correlation-ID'] = correlation
+    return headers
 
 
 class RegistrationMan(object):
@@ -91,10 +101,10 @@ class RegistrationMan(object):
             self._addService(
                 tokenC, payload['token'], base_url, version)
             try:
-                response = requests.post(base_url+'/register', json=data,
-                                         headers={'Authorization': 'Token '+client_tokenB,
-                                                  'X-Request-ID': secrets.token_urlsafe(8),
-                                                  'X-Correlation-ID': req_id})
+                response = requests.post(
+                    base_url+'/register',
+                    json=data,
+                    headers=createOscpHeader(client_tokenB, req_id))
                 log.info(
                     f"send register to {base_url + '/register'} with auth: {client_tokenB}")
                 if response.status_code >= 205:
@@ -153,8 +163,7 @@ class RegistrationMan(object):
         try:
             response = requests.post(
                 base_url+'/heartbeat',
-                headers={'Authorization': 'Token '+token,
-                         'X-Request-ID': secrets.token_urlsafe(8)},
+                headers=createOscpHeader(token),
                 json=data)
             if response.status_code >= 205:
                 raise Exception(response.text)
@@ -172,9 +181,7 @@ class RegistrationMan(object):
             'heartbeat_interval': interval}}
         response = requests.post(
             base_url+'/handshake_acknowledgment',
-            headers={
-                'Authorization': 'Token '+token,
-                'X-Request-ID': secrets.token_urlsafe(8)},
+            headers=createOscpHeader(token),
             json=data)
         if response.status_code >= 205:
             raise Exception(response.text)
@@ -187,8 +194,7 @@ class RegistrationMan(object):
 
         response = requests.post(
             base_url+'/register',
-            headers={'Authorization': 'Token '+client_token,
-                     'X-Request-ID': secrets.token_urlsafe(8)},
+            headers=createOscpHeader(client_token),
             json=data)
         if response.status_code >= 205:
             raise Exception(response.text)
@@ -246,7 +252,7 @@ class RegistrationMan(object):
     def _setGroupIds(self, token, group_ids):
         raise NotImplementedError()
 
-    def getGroupIds(self,token):
+    def getGroupIds(self, token):
         raise NotImplementedError()
 
     def _setRequiredBehavior(self, token, req_behavior, new=True):
@@ -275,9 +281,9 @@ def StoD(string: str):
 def DtoS(date):
     return date.isoformat()
 
-from multiprocessing import Lock
 
 lock = Lock()
+
 
 class RegistrationDictMan(RegistrationMan):
     def __init__(self, version_urls, filename='endpoints.json'):
@@ -321,7 +327,7 @@ class RegistrationDictMan(RegistrationMan):
             endpoints[token].update({"group_ids": group_ids})
             self.writeJson(endpoints)
 
-    def getGroupIds(self,token):
+    def getGroupIds(self, token):
         endpoints = self.readJson()
         return endpoints[token].get("group_ids")
 
@@ -408,7 +414,8 @@ class RegistrationDictMan(RegistrationMan):
 
                     offline_at = endpoint.get('offline_at')
                     if offline_at != None and StoD(offline_at) < datetime.now():
-                        log.info(f'{base_url} endpoint is offline. No Heartbeat received before {offline_at}')
+                        log.info(
+                            f'{base_url} endpoint is offline. No Heartbeat received before {offline_at}')
                 except Exception:
                     log.exception(f'OSCP background job failed for {base_url}')
             self.writeJson(endpoints)
