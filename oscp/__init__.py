@@ -70,11 +70,11 @@ def createBlueprint(injected_objects, actor):
         addPrice(cap_provider_ns)
         addInjected(cap_provider_ns)
     elif actor == 'ep':
-        ep_namespace = Namespace(name="ep", validate=True, path="/ep/2.0")
-        from oscp.registration import namespace_registration
-        namespace_registration(ep_namespace)
-        addPrice(ep_namespace)
-        addInjected(ep_namespace)
+
+        cap_provider_ns.name="ep"
+        cap_provider_ns._path='/ep/2.0'
+        addPrice(cap_provider_ns)
+        addInjected(cap_provider_ns)
     elif actor == 'sch':
         addForPriceCalculation(flex_provider_ns)
         addInjected(flex_provider_ns)

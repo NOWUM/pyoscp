@@ -26,7 +26,15 @@ def _getLatestVersion(version_urls):
     return str(latest), baseUrl
 
 
-def createOscpHeader(token, correlation=None):
+def createOscpHeader(token: str, correlation=None):
+    '''
+    creates the http header to authenticate with the other participant
+
+    token must be provided, optional correlation ID can be given,
+    if the message refers to a previous message sent
+    '''
+    if not token:
+        raise Exception('token must be provided')
     headers = {
         'Authorization': 'Token '+token,
         'X-Request-ID': secrets.token_urlsafe(8),
@@ -217,6 +225,8 @@ class RegistrationMan(object):
         '''
         returns the Client URL and the related Token to access the client
         using the given token to access this api
+
+        returns none if token could not be found
         '''
         url = None
         client_token = None
