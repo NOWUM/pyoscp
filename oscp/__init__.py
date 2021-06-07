@@ -8,7 +8,7 @@ Created on Sun Mar 14 18:02:46 2021
 Api definition file
 """
 from flask import Blueprint
-from flask_restx import Api, Namespace
+from flask_restx import Api
 
 # from oscp.forecasts import forecast_ns
 from oscp.fp_endpoints import flex_provider_ns
@@ -42,7 +42,7 @@ def createBlueprint(injected_objects, actor):
 
     api = Api(
         blueprint,
-        version="1.0",
+        version="2.0",
         title="OSCP OpenAPI Documentation",
         description="Welcome to the OpenAPI documentation site!",
         # the ui can be accessed from url_prefix+doc

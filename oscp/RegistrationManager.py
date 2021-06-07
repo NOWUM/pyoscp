@@ -10,12 +10,29 @@ import threading
 from flask import request
 from datetime import datetime, timedelta
 from packaging import version
+from typing import List, Tuple
 
 log = logging.getLogger('oscp')
 
 
 # always communicate with latest version available
-def _getLatestVersion(version_urls):
+def _getLatestVersion(version_urls: List[str]) -> Tuple(str, str):
+    '''
+    returns the latest semantic version and the base_url
+    given a list of version_urls
+
+    Parameters
+    ----------
+    version_urls : List[str]
+        List of version_urls, dict-objects, containing version and url
+
+    Returns
+    -------
+    Tuple(str,str)
+        latest version and the related base_url
+
+    '''
+
     latest = version.parse(version_urls[0]['version'])
     baseUrl = version_urls[0]['base_url']
     for v in version_urls:
@@ -26,7 +43,7 @@ def _getLatestVersion(version_urls):
     return str(latest), baseUrl
 
 
-def createOscpHeader(token: str, correlation=None):
+def createOscpHeader(token: str, correlation: str = None):
     '''
     creates the http header to authenticate with the other participant
 
@@ -49,7 +66,7 @@ class RegistrationMan(object):
     Base Registration manager independent of persistance technology
     '''
 
-    def __init__(self, version_urls: list, background_interval=5):
+    def __init__(self, version_urls: list, background_interval: int = 5):
         self.version_urls = version_urls
         # run background job every 5 seconds
         self.__stop_thread = False
@@ -88,6 +105,24 @@ class RegistrationMan(object):
         return token
 
     def handleRegister(self, payload: oj.Register):
+        '''
+        handles a registration message, if registered with tokenA
+        saves the tokenB in the payload and answers with a generated tokenC
+        as the response
+
+        Further information in Section "2.6.1. Registration" of the OSCP 2.0
+        standard.
+
+        Parameters
+        ----------
+        payload : oj.Register
+            the registration dict, containing the tokenB and the version_url
+
+        Returns
+        -------
+        None.
+
+        '''
         tokenA = self._check_access_token()
         # check if tokenA is authenticated, otherwise everybody can register
         req_id = request.headers.get("X-Request-ID")
@@ -106,7 +141,7 @@ class RegistrationMan(object):
             tokenC = secrets.token_urlsafe(32)
             data = {'token': tokenC, 'version_url': self.version_urls}
 
-            self._addService(
+            self._updateService(
                 tokenC, payload['token'], base_url, version)
             try:
                 response = requests.post(
@@ -116,7 +151,8 @@ class RegistrationMan(object):
                 log.info(
                     f"send register to {base_url + '/register'} with auth: {client_tokenB}")
                 if response.status_code >= 205:
-                    raise Exception(f'{response.status_code}, {response.json()}')
+                    code = response.status_code
+                    raise Exception(f'{code}, {response.json()}')
             except requests.exceptions.ConnectionError:
                 log.error("connection failed")
             except Exception:
@@ -129,11 +165,14 @@ class RegistrationMan(object):
 
         base_url, version = self._getSupportedVersion(payload['version_url'])
         log.info(f'update endpoint url for: {base_url}')
-        self._addService(token, payload['token'], base_url, version)
+        self._updateService(token, payload['token'], base_url, version)
 
     def unregister(self):
+        '''
+        removes the token used to authenticate with this request
+        '''
         token = self._check_access_token()
-        log.info('unregistering ' + str(token) + '. Goodbye')
+        log.info(f'unregistering {token}. Goodbye')
         self._removeService(token)
 
     def handleHandshake(self, payload: oj.Handshake):
@@ -153,16 +192,20 @@ class RegistrationMan(object):
         offline_at = datetime.strptime(
             payload['offline_mode_at'], "%Y-%m-%d %H:%M:%S")
         self._setOfflineAt(token, offline_at)
-        log.info(f"got a heartbeat from {token}. Will be offline at: {offline_at}")
+        log.info(
+            f"got a heartbeat from {token}. Will be offline at: {offline_at}")
 
-    def _getSupportedVersion(self, version_urls):
+    def _getSupportedVersion(self, version_urls: List) -> Tuple(str, str):
         for my_version in self.version_urls:
             for client_version in version_urls:
                 if client_version['version'] == my_version['version']:
                     return client_version['base_url'], client_version['version']
         raise BadRequest('unsupported version')
 
-    def _send_heartbeat(self, base_url, interval, token):
+    def _send_heartbeat(self, base_url: str, interval: int, token: str):
+        '''
+        sends a heartbeat to the given base_url
+        '''
         next_heartbeat = datetime.now()+timedelta(seconds=interval)
         log.info('send heartbeat to '+base_url)
         offline_at = datetime.now()+3*timedelta(seconds=interval)
@@ -180,7 +223,7 @@ class RegistrationMan(object):
 
         return next_heartbeat
 
-    def _send_ack(self, base_url, interval, token):
+    def _send_ack(self, base_url: str, interval: int, token: str):
         log.info(f'send ack for {base_url}')
         # send ack for new handshakes
 
@@ -194,7 +237,7 @@ class RegistrationMan(object):
         if response.status_code >= 205:
             raise Exception(response.text)
 
-    def _send_register(self, base_url, new_token, client_token):
+    def _send_register(self, base_url: str, new_token: str, client_token: str):
         log.info('send register to '+base_url)
 
         data = {'token': new_token,
@@ -221,7 +264,7 @@ class RegistrationMan(object):
         # send register for new tokens (whatever new means)
         #     self._send_register(base_url, new_token, client_token)
 
-    def getURL(self, token=None, group_id=None):
+    def getURL(self, token: str = None, group_id: str = None):
         '''
         returns the Client URL and the related Token to access the client
         using the given token to access this api
@@ -253,34 +296,31 @@ class RegistrationMan(object):
     def isRegistered(self, token):
         raise NotImplementedError()
 
-    def _addService(self, token, client_token, client_url, version=None):
-        raise NotImplementedError()
-
     def _updateService(self, token, client_token=None, client_url=None, version=None):
         raise NotImplementedError()
 
     def _setGroupIds(self, token, group_ids):
         raise NotImplementedError()
 
-    def getGroupIds(self, token):
+    def getGroupIds(self, token: str):
         raise NotImplementedError()
 
-    def _setRequiredBehavior(self, token, req_behavior, new=True):
+    def _setRequiredBehavior(self, token: str, req_behavior: dict, new=True):
         raise NotImplementedError()
 
-    def _removeService(self, token):
+    def _removeService(self, token: str):
         raise NotImplementedError()
 
-    def _isAuthorized(self, token):
+    def _isAuthorized(self, token: str):
         raise NotImplementedError()
 
-    def _setOfflineAt(self, token, offline_at):
+    def _setOfflineAt(self, token: str, offline_at: datetime):
         raise NotImplementedError()
 
-    def _token_by_group_id(self, group_id):
+    def _token_by_group_id(self, group_id: str):
         raise NotImplementedError()
 
-    def _url_by_token(self, token):
+    def _url_by_token(self, token: str) -> Tuple(str, str):
         raise NotImplementedError()
 
 
@@ -310,16 +350,6 @@ class RegistrationDictMan(RegistrationMan):
         with open(self.filename, 'w') as f:
             json.dump(endpoints, f, indent=4, sort_keys=False)
 
-    def _addService(self, token, client_token, client_url, version=None):
-        with lock:
-            endpoints = self.readJson()
-            endpoints[token] = {'register':
-                                {'token': client_token,
-                                 'base_url': client_url}
-                                }
-            log.debug(f'endpoints: {endpoints}')
-            self.writeJson(endpoints)
-
     def _updateService(self, token, client_token=None, client_url=None, version=None):
         with lock:
             endpoints = self.readJson()
@@ -327,8 +357,11 @@ class RegistrationDictMan(RegistrationMan):
                     {'token': client_token,
                      'base_url': client_url}
                     }
-            # updates client_token and version_url without touching other stuff
-            endpoints[token].update(data)
+            if endpoints[token]:
+                # updates client_token and version_url without touching other stuff
+                endpoints[token].update(data)
+            else:
+                endpoints[token]=data
             self.writeJson(endpoints)
 
     def _setGroupIds(self, token, group_ids):
@@ -378,7 +411,7 @@ class RegistrationDictMan(RegistrationMan):
             log.error(f'No token found for group_id: {group_id}')
         return token
 
-    def _url_by_token(self, token):
+    def _url_by_token(self, token) -> Tuple(str, str):
         endpoints = self.readJson()
         base_url = endpoints[token]['register']['base_url']
         token = endpoints[token]['register']['token']
@@ -414,7 +447,8 @@ class RegistrationDictMan(RegistrationMan):
                     if endpoint.get('should_register') == True:
                         client_token = endpoint['register']['token']
                         try:
-                            self._send_register(base_url, endpoint_token, client_token)
+                            self._send_register(
+                                base_url, endpoint_token, client_token)
                             endpoint['should_register'] = False
                             endpoint['new'] = True
                         except requests.exceptions.ConnectionError:

@@ -74,7 +74,7 @@ if os.path.exists(config):
     log.info(f'reading config file {config}')
     with open(config, 'r') as f:
         conf = json.load(f)
-        regman._addService(conf['token'], None, None)
+        regman._updateService(conf['token'], None, None)
 else:
     log.info(f'config file {config} does not exist')
 
