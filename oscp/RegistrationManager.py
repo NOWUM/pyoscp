@@ -16,7 +16,7 @@ log = logging.getLogger('oscp')
 
 
 # always communicate with latest version available
-def _getLatestVersion(version_urls: List[str]) -> Tuple(str, str):
+def _getLatestVersion(version_urls: List[str]) -> Tuple[str, str]:
     '''
     returns the latest semantic version and the base_url
     given a list of version_urls
@@ -195,7 +195,7 @@ class RegistrationMan(object):
         log.info(
             f"got a heartbeat from {token}. Will be offline at: {offline_at}")
 
-    def _getSupportedVersion(self, version_urls: List) -> Tuple(str, str):
+    def _getSupportedVersion(self, version_urls: List) -> Tuple[str, str]:
         for my_version in self.version_urls:
             for client_version in version_urls:
                 if client_version['version'] == my_version['version']:
@@ -320,7 +320,7 @@ class RegistrationMan(object):
     def _token_by_group_id(self, group_id: str):
         raise NotImplementedError()
 
-    def _url_by_token(self, token: str) -> Tuple(str, str):
+    def _url_by_token(self, token: str) -> Tuple[str, str]:
         raise NotImplementedError()
 
 
@@ -411,7 +411,7 @@ class RegistrationDictMan(RegistrationMan):
             log.error(f'No token found for group_id: {group_id}')
         return token
 
-    def _url_by_token(self, token) -> Tuple(str, str):
+    def _url_by_token(self, token) -> Tuple[str, str]:
         endpoints = self.readJson()
         base_url = endpoints[token]['register']['base_url']
         token = endpoints[token]['register']['token']

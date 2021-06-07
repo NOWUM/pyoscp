@@ -81,7 +81,7 @@ else:
 
 # the injected_objects are used to route requests from the namespace to the
 # logic containing classes like ForecastManager
-blueprint = createBlueprint(injected_objects)  # , actors=['co'])
+blueprint = createBlueprint(injected_objects, actor='cp')
 
 # using a blueprint allows us to initialize everything without an app context
 # this is cleaner, as the oscp module never needs access to the actual Flask server
