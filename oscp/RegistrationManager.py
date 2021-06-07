@@ -357,7 +357,7 @@ class RegistrationDictMan(RegistrationMan):
                     {'token': client_token,
                      'base_url': client_url}
                     }
-            if endpoints[token]:
+            if endpoints.get(token):
                 # updates client_token and version_url without touching other stuff
                 endpoints[token].update(data)
             else:
