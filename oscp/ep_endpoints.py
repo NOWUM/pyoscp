@@ -7,6 +7,7 @@ from oscp.ep_models import ExtForecastedBlock, GroupCapacityPrice
 
 models = [ExtForecastedBlock, GroupCapacityPrice, GroupCapacityForecast]
 
+
 def addPrice(namespace):
     add_models_to_namespace(namespace, models)
     header_parser = create_header_parser(namespace)
@@ -29,5 +30,4 @@ def addPrice(namespace):
             Get Price Series for the electricity of a given LoadSeries Request
             """
             token = self.registrationmanager._check_access_token()
-            return self.capacityprovider.handleRequestCapacityPrice(
-                namespace.payload, token)
+            return self.capacityprovider.handleRequestCapacityPrice(namespace.payload, token)

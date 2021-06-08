@@ -22,10 +22,8 @@ ExtForecastedBlock = Model('ForecastedBlock', {
 
 GroupCapacityPrice = Model('UpdateGroupCapacityPrice', {
     'group_id': fields.String(
-        description='The id of the area in which the Flexibility Provider has Flexibility Resources connected to the '
-                    'grid.'),
+        description='The id of the area in which the Flexibility Provider has Flexibility Resources connected to the grid.'),
     'type': fields.String(enum=capacity_forecast_type, default='CONSUMPTION', description='Identifies the type of forecast.'),
     'forecasted_blocks': fields.List(fields.Nested(ExtForecastedBlock),
-                                     description='The technical content of this message. Describes the amount and period of the to be adjusted '
-                                                 'capacity')
+                                     description='The technical content of this message. Describes the amount and period of the to be adjusted capacity')
 })
