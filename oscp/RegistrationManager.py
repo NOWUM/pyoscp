@@ -85,7 +85,7 @@ class RegistrationMan(object):
                     break
                 self._background_job()
 
-        self.t = threading.Thread(target=bck_job, daemon=True)
+        self.t = threading.Thread(target=bck_job, daemon=True, name='OSCP Worker')
 
     def start(self):
         log.info('starting oscp background job')
