@@ -207,7 +207,7 @@ class RegistrationMan(object):
         sends a heartbeat to the given base_url
         '''
         next_heartbeat = datetime.now()+timedelta(seconds=interval)
-        log.info('send heartbeat to '+base_url)
+        log.info(f'send heartbeat to {base_url}')
         offline_at = datetime.now()+3*timedelta(seconds=interval)
         data = {'offline_mode_at': offline_at.strftime(
             "%Y-%m-%d %H:%M:%S")}
@@ -219,7 +219,7 @@ class RegistrationMan(object):
             if response.status_code >= 205:
                 raise Exception(response.text)
         except:
-            log.info('sent heartbeat failed: '+base_url)
+            log.info(f'sent heartbeat failed, URL: {base_url}')
 
         return next_heartbeat
 
