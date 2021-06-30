@@ -76,7 +76,7 @@ class RegistrationMan(object):
                 "base_url": "http://127.0.0.1:5000/oscp/cp"
             }])
 
-        # and ['group_id1'] from dso1.json
+        # and ['group_id1'] from dso.json
 
         def bck_job():
             ticker = threading.Event()
@@ -354,8 +354,8 @@ class RegistrationDictMan(RegistrationMan):
         with lock:
             endpoints = self.readJson()
             data = {'register':
-                    {'token': client_token,
-                     'base_url': client_url}
+                        {'token': client_token,
+                         'base_url': client_url}
                     }
             if endpoints.get(token):
                 # updates client_token and version_url without touching other stuff
