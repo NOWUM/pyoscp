@@ -66,7 +66,7 @@ class RegistrationMan(object):
     Base Registration manager independent of persistance technology
     '''
 
-    def __init__(self, version_urls: list, background_interval: int = 5):
+    def __init__(self, version_urls: list, background_interval: int = 5, **kwds):
         self.version_urls = version_urls
         # run background job every 5 seconds
         self.__stop_thread = False
@@ -76,7 +76,9 @@ class RegistrationMan(object):
                 "base_url": "http://127.0.0.1:5000/oscp/cp"
             }])
 
-        # and ['group_id1'] from dso.json
+        super().__init__(**kwds)
+
+        # and ['group_id1'] from dso1.json
 
         def bck_job():
             ticker = threading.Event()
@@ -354,8 +356,8 @@ class RegistrationDictMan(RegistrationMan):
         with lock:
             endpoints = self.readJson()
             data = {'register':
-                        {'token': client_token,
-                         'base_url': client_url}
+                    {'token': client_token,
+                     'base_url': client_url}
                     }
             if endpoints.get(token):
                 # updates client_token and version_url without touching other stuff
