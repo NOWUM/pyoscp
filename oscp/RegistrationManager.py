@@ -66,7 +66,7 @@ class RegistrationMan(object):
     Base Registration manager independent of persistance technology
     '''
 
-    def __init__(self, version_urls: list, background_interval: int = 5):
+    def __init__(self, version_urls: list, background_interval: int = 5, **kwds):
         self.version_urls = version_urls
         # run background job every 5 seconds
         self.__stop_thread = False
@@ -75,6 +75,8 @@ class RegistrationMan(object):
                 "version": "2.0",
                 "base_url": "http://127.0.0.1:5000/oscp/cp"
             }])
+
+        super().__init__(**kwds)
 
         # and ['group_id1'] from dso1.json
 
