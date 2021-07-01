@@ -33,7 +33,7 @@ class updateGroupCapacityForecast(Resource):
         The message is sent from Capacity Provider to the Flexibility Provider and from Flexibility Provider to Capacity Optimizer which
         should generate an Optimum capacity forecast for the capacity that should be used in the specific group.
         """
-        self.registrationmanager._check_access_token()
+        token = self.registrationmanager._check_access_token()
         self.flexibilityprovider.handleUpdateGroupCapacityForecast(
-            flex_provider_ns.payload)
+            flex_provider_ns.payload, token)
         return '', 204
