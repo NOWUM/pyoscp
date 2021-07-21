@@ -275,21 +275,15 @@ class RegistrationMan(object):
         '''
         url = None
         client_token = None
-        if token == None and group_id == None:
-            log.error('Either token or group_id must be given.')
-        elif token == None and group_id:
-            try:
-                token = self._token_by_group_id(group_id)
-            except KeyError:
-                log.error(f'invalid group_id: {group_id}')
+        if token == None:
+            log.error('Token argument must be given.')
 
         if token:
             try:
                 url, client_token = self._url_by_token(token)
+                log.debug(f'URL: {url}')
             except KeyError:
-                log.error(f'invalid token: {token}')
-
-        log.debug(f'URL: {url}')
+                log.error(f'Invalid token: {token}')
         return url, client_token
 
     def getEndpoints(self):
@@ -302,9 +296,6 @@ class RegistrationMan(object):
         raise NotImplementedError()
 
     def _setGroupIds(self, token, group_ids):
-        raise NotImplementedError()
-
-    def getGroupIds(self, token: str):
         raise NotImplementedError()
 
     def _setRequiredBehavior(self, token: str, req_behavior: dict, new=True):
@@ -371,10 +362,6 @@ class RegistrationDictMan(RegistrationMan):
             endpoints = self.readJson()
             endpoints[token].update({"group_ids": group_ids})
             self.writeJson(endpoints)
-
-    def getGroupIds(self, token):
-        endpoints = self.readJson()
-        return endpoints[token].get("group_ids")
 
     def _setRequiredBehavior(self, token, required_behavior, new=True):
         with lock:
