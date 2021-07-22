@@ -138,13 +138,11 @@ class RegistrationMan(object):
             tokenA, client_tokenB, base_url, version)
 
         if corr_id is None:
-            self._removeService(tokenA)
-            # remove tokenA, send new tokenC to enduser
             tokenC = secrets.token_urlsafe(32)
-            data = {'token': tokenC, 'version_url': self.version_urls}
+            # remove tokenA, send new tokenC to enduser
+            self._replaceToken(tokenA, tokenC,payload['token'], base_url, version)
 
-            self._updateService(
-                tokenC, payload['token'], base_url, version)
+            data = {'token': tokenC, 'version_url': self.version_urls}
             try:
                 response = requests.post(
                     base_url+'/register',
@@ -303,6 +301,10 @@ class RegistrationMan(object):
 
     def _removeService(self, token: str):
         raise NotImplementedError()
+
+    def _replaceToken(self, token_old, token_new, client_token, client_url, version):
+        self._removeService(token_old)
+        self._updateService(token_new, client_token, client_url, version)
 
     def _isAuthorized(self, token: str):
         raise NotImplementedError()
