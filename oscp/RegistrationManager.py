@@ -145,7 +145,7 @@ class RegistrationMan(object):
                 tokenA, tokenC, payload['token'], base_url, version)
 
             try:
-                self._send_register(base_url, tokenC, client_tokenB)
+                self._send_register(base_url, tokenC, client_tokenB, req_id)
             except requests.exceptions.ConnectionError:
                 log.error("connection failed")
             except Exception:
@@ -230,7 +230,7 @@ class RegistrationMan(object):
         if response.status_code >= 205:
             raise Exception(response.text)
 
-    def _send_register(self, base_url: str, new_token: str, client_token: str):
+    def _send_register(self, base_url: str, new_token: str, client_token: str, correlation: str = None):
         url = base_url + '/register'
         log.debug(f"send register to {url} with auth: {client_token}")
 
@@ -238,7 +238,7 @@ class RegistrationMan(object):
                 'version_url': self.version_urls}
 
         response = requests.post(url,
-                                 headers=createOscpHeader(client_token),
+                                 headers=createOscpHeader(client_token, correlation),
                                  json=data)
         if response.status_code >= 205:
             raise Exception(response.text)
