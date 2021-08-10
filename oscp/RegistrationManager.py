@@ -87,7 +87,8 @@ class RegistrationMan(object):
                     break
                 self._background_job()
 
-        self.t = threading.Thread(target=bck_job, daemon=True, name='OSCP Worker')
+        self.t = threading.Thread(
+            target=bck_job, daemon=True, name='OSCP Worker')
 
     def start(self):
         log.info('starting oscp background job')
@@ -140,19 +141,11 @@ class RegistrationMan(object):
         if corr_id is None:
             tokenC = secrets.token_urlsafe(32)
             # remove tokenA, send new tokenC to enduser
-            self._replaceToken(tokenA, tokenC,payload['token'], base_url, version)
+            self._replaceToken(
+                tokenA, tokenC, payload['token'], base_url, version)
 
-            data = {'token': tokenC, 'version_url': self.version_urls}
             try:
-                response = requests.post(
-                    base_url+'/register',
-                    json=data,
-                    headers=createOscpHeader(client_tokenB, req_id))
-                log.info(
-                    f"send register to {base_url + '/register'} with auth: {client_tokenB}")
-                if response.status_code >= 205:
-                    code = response.status_code
-                    raise Exception(f'{code}, {response.json()}')
+                self._send_register(base_url, tokenC, client_tokenB)
             except requests.exceptions.ConnectionError:
                 log.error("connection failed")
             except Exception:
@@ -238,15 +231,15 @@ class RegistrationMan(object):
             raise Exception(response.text)
 
     def _send_register(self, base_url: str, new_token: str, client_token: str):
-        log.info('send register to '+base_url)
+        url = base_url + '/register'
+        log.debug(f"send register to {url} with auth: {client_token}")
 
         data = {'token': new_token,
                 'version_url': self.version_urls}
 
-        response = requests.post(
-            base_url+'/register',
-            headers=createOscpHeader(client_token),
-            json=data)
+        response = requests.post(url,
+                                 headers=createOscpHeader(client_token),
+                                 json=data)
         if response.status_code >= 205:
             raise Exception(response.text)
 
@@ -356,7 +349,7 @@ class RegistrationDictMan(RegistrationMan):
                 # updates client_token and version_url without touching other stuff
                 endpoints[token].update(data)
             else:
-                endpoints[token]=data
+                endpoints[token] = data
             self.writeJson(endpoints)
 
     def _setGroupIds(self, token, group_ids):
