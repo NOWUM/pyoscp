@@ -147,10 +147,11 @@ class RegistrationMan(object):
             try:
                 self._send_register(base_url, tokenC, client_tokenB, req_id)
             except requests.exceptions.ConnectionError:
-                log.error("connection failed")
+                log.error(f"ConnError {base_url}")
+            except requests.exceptions.HTTPError as e:
+                log.error(f'{e.response.status_code} - {e.response.text}')
             except Exception:
                 log.exception("error in register handling")
-                log.warning(tokenC)
                 # show token to enter in UI
 
     def updateEndpoint(self, payload: oj.Register):
@@ -209,10 +210,9 @@ class RegistrationMan(object):
                 base_url+'/heartbeat',
                 headers=createOscpHeader(token),
                 json=data)
-            if response.status_code >= 205:
-                raise Exception(response.text)
-        except:
-            log.info(f'sent heartbeat failed, URL: {base_url}')
+            response.raise_for_status()
+        except Exception:
+            log.warning(f'sent heartbeat failed, URL: {base_url}')
 
         return next_heartbeat
 
@@ -227,8 +227,7 @@ class RegistrationMan(object):
             base_url+'/handshake_acknowledgment',
             headers=createOscpHeader(token),
             json=data)
-        if response.status_code >= 205:
-            raise Exception(response.text)
+        response.raise_for_status()
 
     def _send_register(self, base_url: str, new_token: str, client_token: str, correlation: str = None):
         url = base_url + '/register'
@@ -240,8 +239,7 @@ class RegistrationMan(object):
         response = requests.post(url,
                                  headers=createOscpHeader(client_token, correlation),
                                  json=data)
-        if response.status_code >= 205:
-            raise Exception(response.text)
+        response.raise_for_status()
 
     def _background_job(self):
         log.debug('run backgroundjob')
@@ -250,7 +248,7 @@ class RegistrationMan(object):
         # if endpoint has handshaked
         #     self._send_ack(base_url, interval, token)
         # if endpoint heartbeat is due -> send heartbeat
-        #     self._send_heartbeat(base_url, interval, token)
+        #     next_beat = self._send_heartbeat(base_url, interval, token)
 
         # if time since last heartbeat is long ago -> set offline
 
@@ -442,7 +440,7 @@ class RegistrationDictMan(RegistrationMan):
 
                     offline_at = endpoint.get('offline_at')
                     if offline_at != None and StoD(offline_at) < datetime.now():
-                        log.info(
+                        log.warning(
                             f'{base_url} endpoint is offline. No Heartbeat received before {offline_at}')
                 except Exception:
                     log.exception(f'OSCP background job failed for {base_url}')
