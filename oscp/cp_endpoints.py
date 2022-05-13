@@ -38,9 +38,9 @@ class adjustGroupCapacityForecast(Resource):
         If the Capacity Provider in fact decides to respond to the request it will report the updated Capacity Forecast
         within a UpdateGroupCapacityForecast message.
         """
-        self.registrationmanager._check_access_token()
+        token = self.registrationmanager._check_access_token()
         self.capacityprovider.handleAdjustGroupCapacityForecast(
-            cap_provider_ns.payload)
+            cap_provider_ns.payload, token)
         return '', 204
 
 
@@ -62,9 +62,9 @@ class groupCapacityComplianceError(Resource):
 
         The Capacity Forecast referred to by the Flexibility Provider SHALL be indicated by the X-Correlation-ID header.
         """
-        self.registrationmanager._check_access_token()
+        token = self.registrationmanager._check_access_token()
         self.capacityprovider.handleGroupCapacityComplianceError(
-            cap_provider_ns.payload)
+            cap_provider_ns.payload, token)
         return '', 204
 
 
@@ -88,7 +88,7 @@ class updateGroupMeasurements(Resource):
         Furthermore, the information can be used to determine a division of the Capacity Forecast over the different Flexibility Providers.
         The total usage can be 'nothing'. Therefore, the measurements field can be empty.
         """
-        self.registrationmanager._check_access_token()
+        token = self.registrationmanager._check_access_token()
         self.capacityprovider.handleUpdateGroupMeasurements(
-            cap_provider_ns.payload)
+            cap_provider_ns.payload, token)
         return '', 204
