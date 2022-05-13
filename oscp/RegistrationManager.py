@@ -373,7 +373,8 @@ class RegistrationDictMan(RegistrationMan):
         return self.readJson()
 
     def isRegistered(self, token):
-        endpoints = self.readJson()
+        with lock:
+            endpoints = self.readJson()
         return token in endpoints
 
     def _setOfflineAt(self, token, offline_at):
