@@ -2,3 +2,4 @@ flask-restx
 gunicorn
 requests
 packaging
+Werkzeug <= 2.1.2
