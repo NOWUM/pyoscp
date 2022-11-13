@@ -5,17 +5,20 @@ Created on Sun Mar 14 18:02:46 2021
 
 @author: maurer
 
-Api definition file
+API definition file
 """
+from __future__ import annotations
+
 from flask import Blueprint
 from flask_restx import Api
 
-# from oscp.forecasts import forecast_ns
-from oscp.fp_endpoints import flex_provider_ns
-from oscp.cp_endpoints import cap_provider_ns
 from oscp.co_endpoints import cap_optimizer_ns
+from oscp.cp_endpoints import cap_provider_ns
 from oscp.ep_endpoints import addPrice
 from oscp.epc_endpoints import addForPriceCalculation
+
+# from oscp.forecasts import forecast_ns
+from oscp.fp_endpoints import flex_provider_ns
 
 
 def createBlueprint(injected_objects, actor):
@@ -33,12 +36,12 @@ def createBlueprint(injected_objects, actor):
     :return blueprint: Blueprint dies das
 
     """
-    if not actor in ['fp', 'cp', 'co', 'dso', 'ep', 'sch']:
-        raise Exception('unknown actor')
+    if not actor in ["fp", "cp", "co", "dso", "ep", "sch"]:
+        raise Exception("unknown actor")
     blueprint = Blueprint("api", __name__, url_prefix="/oscp")
-    authorizations = {"Bearer": {"type": "apiKey",
-                                 "in": "header",
-                                 "name": "Authorization"}}
+    authorizations = {
+        "Bearer": {"type": "apiKey", "in": "header", "name": "Authorization"}
+    }
 
     api = Api(
         blueprint,
@@ -48,7 +51,7 @@ def createBlueprint(injected_objects, actor):
         # the ui can be accessed from url_prefix+doc
         authorizations=authorizations,
         doc="/ui",
-        default_label="Python OSCP Framework"
+        default_label="Python OSCP Framework",
     )
 
     # inject objects through class kwargs
@@ -56,26 +59,26 @@ def createBlueprint(injected_objects, actor):
 
     def addInjected(ns):
         for res in ns.resources:
-            res.kwargs['resource_class_kwargs'] = injected_objects
+            res.kwargs["resource_class_kwargs"] = injected_objects
         api.add_namespace(ns)
 
     # register namespace at api (must be done for new namespaces too)
-    if actor == 'fp':
+    if actor == "fp":
         addInjected(flex_provider_ns)
-    elif actor == 'cp':
+    elif actor == "cp":
         addInjected(cap_provider_ns)
-    elif actor == 'co':
+    elif actor == "co":
         addInjected(cap_optimizer_ns)
-    elif actor == 'dso':
+    elif actor == "dso":
         addPrice(cap_provider_ns)
         addInjected(cap_provider_ns)
-    elif actor == 'ep':
+    elif actor == "ep":
 
-        cap_provider_ns.name="ep"
-        cap_provider_ns._path='/ep/2.0'
+        cap_provider_ns.name = "ep"
+        cap_provider_ns._path = "/ep/2.0"
         addPrice(cap_provider_ns)
         addInjected(cap_provider_ns)
-    elif actor == 'sch':
+    elif actor == "sch":
         addForPriceCalculation(flex_provider_ns)
         addInjected(flex_provider_ns)
 

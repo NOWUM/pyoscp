@@ -1,6 +1,13 @@
-from flask_restx import Resource, Namespace  # ,add_models_to__namespace
-from oscp.json_models import (add_models_to_namespace, create_header_parser,
-                              GroupCapacityForecast, ForecastedBlock)
+from __future__ import annotations
+
+from flask_restx import Namespace, Resource  # ,add_models_to__namespace
+
+from oscp.json_models import (
+    ForecastedBlock,
+    GroupCapacityForecast,
+    add_models_to_namespace,
+    create_header_parser,
+)
 from oscp.registration import namespace_registration
 
 cap_optimizer_ns = Namespace(name="co", validate=True, path="/co/2.0")
@@ -12,14 +19,16 @@ header_parser = create_header_parser(cap_optimizer_ns)
 namespace_registration(cap_optimizer_ns)
 
 
-@cap_optimizer_ns.route('/update_group_capacity_forecast', doc={"description": "API Endpoint for Session management"})
+@cap_optimizer_ns.route(
+    "/update_group_capacity_forecast",
+    doc={"description": "API Endpoint for Session management"},
+)
 @cap_optimizer_ns.expect(header_parser)  # validate=True
-@cap_optimizer_ns.response(204, 'No Content')
+@cap_optimizer_ns.response(204, "No Content")
 class updateGroupCapacityForecast(Resource):
-
     def __init__(self, api=None, *args, **kwargs):
-        self.capacityoptimizer = kwargs['capacityoptimizer']
-        self.registrationmanager = kwargs['registrationmanager']
+        self.capacityoptimizer = kwargs["capacityoptimizer"]
+        self.registrationmanager = kwargs["registrationmanager"]
         super().__init__(api, *args, **kwargs)
 
     @cap_optimizer_ns.expect(GroupCapacityForecast)
@@ -31,23 +40,25 @@ class updateGroupCapacityForecast(Resource):
         """
 
         self.capacityoptimizer.handleUpdateGroupCapacityForecast(
-            cap_optimizer_ns.payload)
-        return '', 204
+            cap_optimizer_ns.payload
+        )
+        return "", 204
 
 
-@cap_optimizer_ns.route('/update_asset_measurements', doc={"description": "API Endpoint for Session management"})
+@cap_optimizer_ns.route(
+    "/update_asset_measurements",
+    doc={"description": "API Endpoint for Session management"},
+)
 @cap_optimizer_ns.expect(header_parser)  # validate=True
-@cap_optimizer_ns.response(204, 'No Content')
+@cap_optimizer_ns.response(204, "No Content")
 class updateAssetMeasurements(Resource):
-
     def __init__(self, api=None, *args, **kwargs):
-        self.capacityoptimizer = kwargs['capacityoptimizer']
-        self.registrationmanager = kwargs['registrationmanager']
+        self.capacityoptimizer = kwargs["capacityoptimizer"]
+        self.registrationmanager = kwargs["registrationmanager"]
         super().__init__(api, *args, **kwargs)
 
     @cap_optimizer_ns.expect(GroupCapacityForecast)
     def post(self):
         self.registrationmanager._check_access_token()
-        self.capacityoptimizer.handleUpdateAssetMeasurements(
-            cap_optimizer_ns.payload)
-        return '', 204
+        self.capacityoptimizer.handleUpdateAssetMeasurements(cap_optimizer_ns.payload)
+        return "", 204

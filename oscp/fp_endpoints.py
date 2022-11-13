@@ -1,7 +1,14 @@
+from __future__ import annotations
+
+from flask_restx import Namespace, Resource  # ,add_models_to__namespace
+
+from oscp.json_models import (
+    ForecastedBlock,
+    GroupCapacityForecast,
+    add_models_to_namespace,
+    create_header_parser,
+)
 from oscp.registration import namespace_registration
-from flask_restx import Resource, Namespace  # ,add_models_to__namespace
-from oscp.json_models import (create_header_parser, add_models_to_namespace,
-                              GroupCapacityForecast, ForecastedBlock)
 
 flex_provider_ns = Namespace(name="fp", validate=True, path="/fp/2.0")
 
@@ -13,16 +20,17 @@ header_parser = create_header_parser(flex_provider_ns)
 namespace_registration(flex_provider_ns)
 
 
-@flex_provider_ns.route('/update_group_capacity_forecast',
-                        doc={"description": "API Endpoint for Session management"})
+@flex_provider_ns.route(
+    "/update_group_capacity_forecast",
+    doc={"description": "API Endpoint for Session management"},
+)
 @flex_provider_ns.expect(header_parser)  # validate=True
-@flex_provider_ns.response(204, 'No Content')
+@flex_provider_ns.response(204, "No Content")
 class updateGroupCapacityForecast(Resource):
-
     def __init__(self, api=None, *args, **kwargs):
         # forecastmanager is a black box dependency, which contains the logic
-        self.flexibilityprovider = kwargs['flexibilityprovider']
-        self.registrationmanager = kwargs['registrationmanager']
+        self.flexibilityprovider = kwargs["flexibilityprovider"]
+        self.registrationmanager = kwargs["registrationmanager"]
         super().__init__(api, *args, **kwargs)
 
     @flex_provider_ns.expect(GroupCapacityForecast)
@@ -35,5 +43,6 @@ class updateGroupCapacityForecast(Resource):
         """
         token = self.registrationmanager._check_access_token()
         self.flexibilityprovider.handleUpdateGroupCapacityForecast(
-            flex_provider_ns.payload, token)
-        return '', 204
+            flex_provider_ns.payload, token
+        )
+        return "", 204

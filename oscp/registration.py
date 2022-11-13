@@ -6,22 +6,45 @@ Created on Sun Apr 11 19:19:30 2021
 @author: maurer
 """
 
+from __future__ import annotations
+
 from flask_restx import Resource
-from oscp.json_models import (add_models_to_namespace, create_header_parser,
-                              Register, Handshake, HandshakeAcknowledgement, Heartbeat, VersionUrl, RequiredBehaviour)
+
+from oscp.json_models import (
+    Handshake,
+    HandshakeAcknowledgement,
+    Heartbeat,
+    Register,
+    RequiredBehaviour,
+    VersionUrl,
+    add_models_to_namespace,
+    create_header_parser,
+)
 
 
 def namespace_registration(namespace):
-    add_models_to_namespace(namespace, [
-        Register, Handshake, HandshakeAcknowledgement, Heartbeat, VersionUrl, RequiredBehaviour])
+    add_models_to_namespace(
+        namespace,
+        [
+            Register,
+            Handshake,
+            HandshakeAcknowledgement,
+            Heartbeat,
+            VersionUrl,
+            RequiredBehaviour,
+        ],
+    )
     header_parser = create_header_parser(namespace)
 
-    @namespace.route('/register', doc={"description": "API Endpoint for Registration of participants"})
+    @namespace.route(
+        "/register",
+        doc={"description": "API Endpoint for Registration of participants"},
+    )
     @namespace.expect(header_parser)  # validate=True
-    @namespace.response(204, 'No Content')
+    @namespace.response(204, "No Content")
     class register(Resource):
         def __init__(self, api=None, *args, **kwargs):
-            self.registrationmanager = kwargs['registrationmanager']
+            self.registrationmanager = kwargs["registrationmanager"]
             super().__init__(api, *args, **kwargs)
 
         @namespace.expect(Register)
@@ -35,23 +58,25 @@ def namespace_registration(namespace):
             The (one-time) registration of an endpoint MUST be done prior to sending handshakes which is described below.
             """
             self.registrationmanager.handleRegister(namespace.payload)
-            return '', 204
+            return "", 204
 
         @namespace.expect(Register)
         def put(self):
             self.registrationmanager.updateEndpoint(namespace.payload)
-            return '', 204
+            return "", 204
 
         def delete(self):
             self.registrationmanager.unregister()
-            return '', 204
+            return "", 204
 
-    @namespace.route('/handshake', doc={"description": "API Endpoint for Handshake of participants"})
+    @namespace.route(
+        "/handshake", doc={"description": "API Endpoint for Handshake of participants"}
+    )
     @namespace.expect(header_parser)  # validate=True
-    @namespace.response(204, 'No Content')
+    @namespace.response(204, "No Content")
     class handshake(Resource):
         def __init__(self, api=None, *args, **kwargs):
-            self.registrationmanager = kwargs['registrationmanager']
+            self.registrationmanager = kwargs["registrationmanager"]
             super().__init__(api, *args, **kwargs)
 
         @namespace.expect(Handshake)
@@ -64,15 +89,19 @@ def namespace_registration(namespace):
             3. The CP accepts the handshake acknowledge by replying with a HTTP 204.
             """
             self.registrationmanager.handleHandshake(namespace.payload)
-            return '', 204
+            return "", 204
 
-    @namespace.route('/handshake_acknowledgment',
-                     doc={"description": "API Endpoint for Handshake aknowledgement of participants"})
+    @namespace.route(
+        "/handshake_acknowledgment",
+        doc={
+            "description": "API Endpoint for Handshake aknowledgement of participants"
+        },
+    )
     @namespace.expect(header_parser)  # validate=True
-    @namespace.response(204, 'No Content')
+    @namespace.response(204, "No Content")
     class handshake_acknowledgement(Resource):
         def __init__(self, api=None, *args, **kwargs):
-            self.registrationmanager = kwargs['registrationmanager']
+            self.registrationmanager = kwargs["registrationmanager"]
             super().__init__(api, *args, **kwargs)
 
         @namespace.expect(HandshakeAcknowledgement)
@@ -85,14 +114,17 @@ def namespace_registration(namespace):
             3. The CP accepts the handshake acknowledge by replying with a HTTP 204.
             """
             self.registrationmanager.handleHandshakeAck(namespace.payload)
-            return '', 204
+            return "", 204
 
-    @namespace.route('/heartbeat', doc={"description": "API Endpoint for Registration of participants"})
+    @namespace.route(
+        "/heartbeat",
+        doc={"description": "API Endpoint for Registration of participants"},
+    )
     @namespace.expect(header_parser)  # validate=True
-    @namespace.response(204, 'No Content')
+    @namespace.response(204, "No Content")
     class heartbeat(Resource):
         def __init__(self, api=None, *args, **kwargs):
-            self.registrationmanager = kwargs['registrationmanager']
+            self.registrationmanager = kwargs["registrationmanager"]
             super().__init__(api, *args, **kwargs)
 
         @namespace.expect(Heartbeat)
@@ -102,4 +134,4 @@ def namespace_registration(namespace):
 
             """
             self.registrationmanager.handleHeartbeat(namespace.payload)
-            return '', 204
+            return "", 204
