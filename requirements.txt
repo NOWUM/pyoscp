@@ -1,4 +1,0 @@
-flask-restx
-gunicorn
-requests
-packaging
