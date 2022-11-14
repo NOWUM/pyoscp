@@ -26,7 +26,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.7"
-flask = "^2.2.2"
+flask = "*"
 flask-restx = "^1.0.3"
 importlib_metadata = { version = ">=4.0.0", markers = "python_version < '3.8'" }
 packaging = "^21.3"
