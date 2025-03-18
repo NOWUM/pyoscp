@@ -1,13 +1,16 @@
-[tool.poetry]
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
 name = "pyoscp"
 version = "0.1.0"
 description = "Python library for the Open Smart Charging Protocol (OSCP)"
-authors = ["Florian Maurer <maurer@fh-aachen.de>"]
-license = "MIT License"
+authors = [
+  { name = "Florian Maurer", email = "maurer@fh-aachen.de"},
+]
+license = {text = "MIT"}
 readme = "README.md"
-
-homepage = "https://github.com/NOWUM/pyoscp"
-repository = "https://github.com/NOWUM/pyoscp"
 
 keywords = ["ev", "charging", "OpenAPI", "Swagger", "REST"]
 
@@ -20,29 +23,27 @@ classifiers=[
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
-packages = [
-    { include = "oscp" },
+requires-python = ">=3.10"
+
+dependencies = [
+    "flask >= 2.1.2",
+    "flask-restx >= 1.0.3",
+    "requests >= 2.28.1",
 ]
 
-[tool.poetry.dependencies]
-python = "^3.7"
-flask = "*"
-flask-restx = "^1.0.3"
-importlib_metadata = { version = ">=4.0.0", markers = "python_version < '3.8'" }
-packaging = "^21.3"
-requests = "^2.28.1"
+[project.optional-dependencies]
+dev = [
+    "black >= 22.8.0",
+    "isort >= 5.10.1",
+    "mypy  >= 0.971",
+]
 
+[project.urls]
+homepage = "https://github.com/NOWUM/pyoscp"
+repository = "https://github.com/NOWUM/pyoscp"
 
-
-
-[tool.poetry.group.dev.dependencies]
-black = "^22.8.0"
-isort = "^5.10.1"
-mypy  = "^0.971"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.setuptools]
+packages = {find = {}}
 
 [tool.isort]
 profile = "black"
